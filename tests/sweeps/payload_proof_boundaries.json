@@ -1,0 +1,560 @@
+{
+  "sweeps": [
+    {
+      "name": "payload_show_analysis_count_boundary",
+      "base": {
+        "args": {
+          "detector_config": {"payload_marker_patterns": ["synthetic_marker="]}
+        },
+        "actors": {
+          "source": {"ip": "doc:1:180", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {
+            "actor": "source",
+            "repeat": 12,
+            "every": 1,
+            "path": "/synthetic/payload-show?synthetic_marker=alpha&probe=union%20all%20select"
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["payload-fuzzer"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["payload-fuzzer"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_marker_short_stays_clean",
+          "covers": [
+            {"kind": "payload-fuzzer", "args": ["payload_show_analysis_count"], "boundary": "below"}
+          ],
+          "set": {
+            "events.0.repeat": 11,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["payload-fuzzer"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_marker_threshold_fires",
+          "covers": [
+            {"kind": "payload-fuzzer", "args": ["payload_show_analysis_count"], "boundary": "at"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "payload_injection_count_boundary",
+      "base": {
+        "args": {
+          "detector_config": {"payload_marker_patterns": ["synthetic_marker="]}
+        },
+        "actors": {
+          "source": {"ip": "doc:1:181", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/payload-injection?synthetic_marker=alpha&probe=union%20all%20select"},
+          {"actor": "source", "at": 1, "path": "/synthetic/payload-injection?synthetic_marker=alpha&probe=union%20all%20select"},
+          {"actor": "source", "at": 2, "path": "/synthetic/payload-injection?synthetic_marker=alpha&probe=union%20all%20select"},
+          {
+            "actor": "source",
+            "at": 3,
+            "repeat": 9,
+            "every": 1,
+            "path": "/synthetic/payload-injection?synthetic_marker=alpha"
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["payload-fuzzer"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["payload-fuzzer"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_injection_short_stays_clean",
+          "covers": [
+            {"kind": "payload-fuzzer", "args": ["payload_injection_count"], "boundary": "below"}
+          ],
+          "set": {
+            "events.2.path": "/synthetic/payload-injection?synthetic_marker=alpha",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["payload-fuzzer"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_injection_threshold_fires",
+          "covers": [
+            {"kind": "payload-fuzzer", "args": ["payload_injection_count"], "boundary": "at"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "payload_referer_junk_count_boundary",
+      "base": {
+        "args": {
+          "detector_config": {"payload_marker_patterns": ["synthetic_marker="]}
+        },
+        "actors": {
+          "source": {"ip": "doc:1:182", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {
+            "actor": "source",
+            "repeat": 6,
+            "every": 1,
+            "path": "/synthetic/payload-referer?synthetic_marker=alpha",
+            "referer": "junk_referrer"
+          },
+          {
+            "actor": "source",
+            "at": 6,
+            "repeat": 6,
+            "every": 1,
+            "path": "/synthetic/payload-referer?synthetic_marker=alpha",
+            "referer": "none"
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["payload-fuzzer"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["payload-fuzzer"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_referer_short_stays_clean",
+          "covers": [
+            {"kind": "payload-fuzzer", "args": ["payload_referer_junk_count"], "boundary": "below"}
+          ],
+          "set": {
+            "events.0.repeat": 5,
+            "events.1.repeat": 7,
+            "events.1.at": 5,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["payload-fuzzer"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_referer_threshold_fires",
+          "covers": [
+            {"kind": "payload-fuzzer", "args": ["payload_referer_junk_count"], "boundary": "at"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "payload_mutation_count_boundary",
+      "base": {
+        "args": {
+          "detector_config": {"payload_marker_patterns": ["synthetic_marker="]}
+        },
+        "actors": {
+          "source": {"ip": "doc:1:183", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/payload-mutation?synthetic_marker=alpha&slot=1"},
+          {"actor": "source", "at": 1, "path": "/synthetic/payload-mutation?synthetic_marker=alpha&slot=2"},
+          {"actor": "source", "at": 20, "path": "/synthetic/payload-mutation?synthetic_marker=alpha&slot=3"},
+          {"actor": "source", "at": 21, "path": "/synthetic/payload-mutation?synthetic_marker=alpha&slot=4"},
+          {"actor": "source", "at": 40, "path": "/synthetic/payload-mutation?synthetic_marker=alpha&slot=5"},
+          {"actor": "source", "at": 41, "path": "/synthetic/payload-mutation?synthetic_marker=alpha&slot=6"},
+          {"actor": "source", "at": 60, "path": "/synthetic/payload-mutation?synthetic_marker=alpha&slot=7"},
+          {"actor": "source", "at": 61, "path": "/synthetic/payload-mutation?synthetic_marker=alpha&slot=8"},
+          {
+            "actor": "source",
+            "at": 90,
+            "repeat": 4,
+            "every": 1,
+            "path": "/synthetic/payload-mutation?synthetic_marker=alpha&slot=filler"
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["payload-fuzzer"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["payload-fuzzer"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_mutation_short_stays_clean",
+          "covers": [
+            {"kind": "payload-fuzzer", "args": ["payload_mutation_count"], "boundary": "below"}
+          ],
+          "set": {
+            "events.7.path": "/synthetic/payload-mutation?synthetic_marker=alpha&slot=7",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["payload-fuzzer"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_mutation_threshold_fires",
+          "covers": [
+            {"kind": "payload-fuzzer", "args": ["payload_mutation_count"], "boundary": "at"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "payload_pair_gap_seconds_boundary",
+      "base": {
+        "args": {
+          "detector_config": {"payload_marker_patterns": ["synthetic_marker="]}
+        },
+        "actors": {
+          "source": {"ip": "doc:1:184", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/payload-gap?synthetic_marker=alpha&slot=1"},
+          {"actor": "source", "at": 8, "path": "/synthetic/payload-gap?synthetic_marker=alpha&slot=2"},
+          {"actor": "source", "at": 30, "path": "/synthetic/payload-gap?synthetic_marker=alpha&slot=3"},
+          {"actor": "source", "at": 38, "path": "/synthetic/payload-gap?synthetic_marker=alpha&slot=4"},
+          {"actor": "source", "at": 60, "path": "/synthetic/payload-gap?synthetic_marker=alpha&slot=5"},
+          {"actor": "source", "at": 68, "path": "/synthetic/payload-gap?synthetic_marker=alpha&slot=6"},
+          {"actor": "source", "at": 90, "path": "/synthetic/payload-gap?synthetic_marker=alpha&slot=7"},
+          {"actor": "source", "at": 98, "path": "/synthetic/payload-gap?synthetic_marker=alpha&slot=8"},
+          {
+            "actor": "source",
+            "at": 130,
+            "repeat": 4,
+            "every": 1,
+            "path": "/synthetic/payload-gap?synthetic_marker=alpha&slot=filler"
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["payload-fuzzer"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["payload-fuzzer"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "at_gap_threshold_fires",
+          "covers": [
+            {"kind": "payload-fuzzer", "args": ["payload_pair_gap_seconds"], "boundary": "at"}
+          ]
+        },
+        {
+          "name": "above_gap_threshold_stays_clean",
+          "covers": [
+            {"kind": "payload-fuzzer", "args": ["payload_pair_gap_seconds"], "boundary": "above"}
+          ],
+          "set": {
+            "events.7.at": 98.1,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["payload-fuzzer"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "same_second_ua_swap_count_boundary",
+      "base": {
+        "args": {
+          "detector_config": {"payload_marker_patterns": ["synthetic_marker="]},
+          "ua_switch_count": 3
+        },
+        "actors": {
+          "source": {"ip": "doc:1:185", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0.1, "path": "/synthetic/payload-ua-swap?synthetic_marker=alpha&slot=1", "ua": "chrome_120"},
+          {"actor": "source", "at": 0.4, "path": "/synthetic/payload-ua-swap?synthetic_marker=alpha&slot=2", "ua": "firefox_122"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["same-second-ua-swap"]},
+            "absent_proofs": {"source": ["payload-fuzzer", "rapid-ua-switch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["same-second-ua-swap"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_swap_short_stays_clean",
+          "covers": [
+            {"kind": "same-second-ua-swap", "args": ["same_second_ua_swap_count"], "boundary": "below"}
+          ],
+          "set": {
+            "events.1.ua": "chrome_120",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["same-second-ua-swap", "payload-fuzzer", "rapid-ua-switch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_swap_threshold_fires",
+          "covers": [
+            {"kind": "same-second-ua-swap", "args": ["same_second_ua_swap_count"], "boundary": "at"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "rapid_ua_switch_count_boundary",
+      "base": {
+        "actors": {
+          "source": {"ip": "doc:1:186", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/rapid-count-a", "ua": "chrome_120"},
+          {"actor": "source", "at": 0.5, "path": "/synthetic/rapid-count-b", "ua": "firefox_122"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["rapid-ua-switch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["rapid-ua-switch"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_request_short_stays_clean",
+          "covers": [
+            {"kind": "rapid-ua-switch", "args": ["ua_switch_count"], "boundary": "below"}
+          ],
+          "set": {
+            "args": {"ua_switch_count": 3},
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["rapid-ua-switch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_count_threshold_fires",
+          "covers": [
+            {"kind": "rapid-ua-switch", "args": ["ua_switch_count"], "boundary": "at"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "rapid_ua_switch_window_seconds_boundary",
+      "base": {
+        "actors": {
+          "source": {"ip": "doc:1:187", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/rapid-window-a", "ua": "chrome_120"},
+          {"actor": "source", "at": 2.0, "path": "/synthetic/rapid-window-b", "ua": "firefox_122"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["rapid-ua-switch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["rapid-ua-switch"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "at_window_threshold_fires",
+          "covers": [
+            {"kind": "rapid-ua-switch", "args": ["ua_switch_window_seconds"], "boundary": "at"}
+          ]
+        },
+        {
+          "name": "outside_window_stays_clean",
+          "covers": [
+            {"kind": "rapid-ua-switch", "args": ["ua_switch_window_seconds"], "boundary": "above"}
+          ],
+          "set": {
+            "events.1.at": 2.1,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["rapid-ua-switch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "rapid_ua_switch_distinct_uas_boundary",
+      "base": {
+        "args": {
+          "ua_switch_distinct_families": 1
+        },
+        "actors": {
+          "source": {"ip": "doc:1:188", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/rapid-uas-a", "ua": "chrome_120"},
+          {"actor": "source", "at": 0.5, "path": "/synthetic/rapid-uas-b", "ua": "chrome_133"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["rapid-ua-switch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["rapid-ua-switch"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_distinct_ua_short_stays_clean",
+          "covers": [
+            {"kind": "rapid-ua-switch", "args": ["ua_switch_distinct_uas"], "boundary": "below"}
+          ],
+          "set": {
+            "events.1.ua": "chrome_120",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["rapid-ua-switch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_distinct_ua_threshold_fires",
+          "covers": [
+            {"kind": "rapid-ua-switch", "args": ["ua_switch_distinct_uas"], "boundary": "at"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "rapid_ua_switch_distinct_families_boundary",
+      "base": {
+        "actors": {
+          "source": {"ip": "doc:1:189", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/rapid-families-a", "ua": "chrome_120"},
+          {"actor": "source", "at": 0.5, "path": "/synthetic/rapid-families-b", "ua": "firefox_122"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["rapid-ua-switch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["rapid-ua-switch"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_distinct_family_short_stays_clean",
+          "covers": [
+            {"kind": "rapid-ua-switch", "args": ["ua_switch_distinct_families"], "boundary": "below"}
+          ],
+          "set": {
+            "events.1.ua": "chrome_133",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["rapid-ua-switch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_distinct_family_threshold_fires",
+          "covers": [
+            {"kind": "rapid-ua-switch", "args": ["ua_switch_distinct_families"], "boundary": "at"}
+          ]
+        }
+      ]
+    }
+  ]
+}

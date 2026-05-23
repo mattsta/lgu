@@ -1,0 +1,16 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Any sample or demo logs
+*.log
+
+# Optional local data sources, never vendored with LGU
+priv/

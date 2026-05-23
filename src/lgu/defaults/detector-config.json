@@ -1,0 +1,41 @@
+{
+  "known_bot_any_patterns": [
+    "bot",
+    "crawler",
+    "spider",
+    "rss",
+    "feedi",
+    "tt-rss",
+    "reeder",
+    "miniflux",
+    "minifeed",
+    "bifolia",
+    "uptimerobot",
+    "go-http-client",
+    "http\\.rb",
+    "curl",
+    "wget",
+    "python-requests",
+    "python-urllib",
+    "scrapy",
+    "mastodon",
+    "pleroma",
+    "misskey",
+    "down/\\d",
+    "buck/\\d",
+    "sqlmap",
+    "seokicks",
+    "mj12bot"
+  ],
+  "known_bot_ua_patterns": [
+    "facebookexternalhit",
+    "\\bnode\\b",
+    "chrome/83\\.0\\.4103\\.61 safari/537\\.36",
+    "\\biPhone OS 13_[0-9_]*\\b.*\\bVersion/13(?:\\.\\d+)*\\b.*\\bMobile/[^ ]+ Safari/",
+    "mwmbl/",
+    "trafilatura/",
+    "dataprovider\\.com"
+  ],
+  "known_bot_referer_patterns": [],
+  "payload_marker_patterns": []
+}

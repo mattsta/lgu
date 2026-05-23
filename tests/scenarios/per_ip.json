@@ -1,0 +1,282 @@
+{
+  "scenarios": [
+    {
+      "name": "cadenced_repeat_hourly_same_path",
+      "args": {"cadence_hour_repeat_count": 99},
+      "actors": {
+        "bot": {"ip": "doc:2:44", "ua": "chrome_133", "referer": "none"},
+        "human": {"ip": "doc:1:44", "ua": "chrome_120", "referer": "referrer"}
+      },
+      "events": [
+        {
+          "actor": "bot",
+          "repeat": 3,
+          "every": 3660,
+          "path": "/synthetic/scenario-cadenced-target"
+        },
+        {
+          "actor": "human",
+          "repeat": 4,
+          "at": 120,
+          "every": 95,
+          "path_template": "/synthetic/scenario-human-read-{i:02d}"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["bot"],
+          "clean": ["human"],
+          "proofs": {"bot": ["cadenced-repeat"]},
+          "absent_proofs": {"human": ["cadenced-repeat", "tight-multifetch"]}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "bot", "action": "ban", "reasons": ["cadenced-repeat"]}
+          ],
+          "no_emissions": ["human"]
+        }
+      }
+    },
+    {
+      "name": "cadenced_repeat_jitter_above_tolerance_stays_clean",
+      "args": {"cadence_hour_repeat_count": 99},
+      "actors": {
+        "source": {"ip": "doc:2:45", "ua": "chrome_133", "referer": "none"}
+      },
+      "events": [
+        {"actor": "source", "at": 0, "path": "/synthetic/scenario-cadence-near-miss"},
+        {"actor": "source", "at": 3600, "path": "/synthetic/scenario-cadence-near-miss"},
+        {"actor": "source", "at": 7212, "path": "/synthetic/scenario-cadence-near-miss"}
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["source"],
+          "absent_proofs": {"source": ["cadenced-repeat"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["source"]
+        }
+      }
+    },
+    {
+      "name": "cadenced_repeat_two_hit_near_hour_same_path",
+      "actors": {
+        "source": {"ip": "doc:2:46", "ua": "chrome_133", "referer": "none"}
+      },
+      "events": [
+        {"actor": "source", "at": 0, "path": "/synthetic/scenario-near-hour-cadence"},
+        {"actor": "source", "at": 3661, "path": "/synthetic/scenario-near-hour-cadence"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "proofs": {"source": ["cadenced-repeat"]}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "ban", "reasons": ["cadenced-repeat"]}
+          ]
+        }
+      }
+    },
+    {
+      "name": "cadenced_repeat_two_hit_off_hour_stays_clean",
+      "actors": {
+        "source": {"ip": "doc:2:47", "ua": "chrome_133", "referer": "none"}
+      },
+      "events": [
+        {"actor": "source", "at": 0, "path": "/synthetic/scenario-off-hour-cadence"},
+        {"actor": "source", "at": 3479, "path": "/synthetic/scenario-off-hour-cadence"}
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["source"],
+          "absent_proofs": {"source": ["cadenced-repeat"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["source"]
+        }
+      }
+    },
+    {
+      "name": "tight_multifetch_same_second_repeated_paths",
+      "actors": {
+        "bot": {"ip": "doc:3:51", "ua": "firefox_150", "referer": "referrer"}
+      },
+      "events": [
+        {"actor": "bot", "at": 0, "path": "/synthetic/scenario-multifetch-alpha"},
+        {"actor": "bot", "at": 0, "path": "/synthetic/scenario-multifetch-beta"},
+        {"actor": "bot", "at": 25, "path": "/synthetic/scenario-multifetch-alpha"},
+        {"actor": "bot", "at": 28, "path": "/synthetic/scenario-multifetch-beta"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["bot"],
+          "proofs": {"bot": ["tight-multifetch"]}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "bot", "action": "ban", "reasons": ["tight-multifetch"]}
+          ]
+        }
+      }
+    },
+    {
+      "name": "repeated_pair_threshold_lock",
+      "actors": {
+        "bot": {"ip": "doc:1:64", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {
+          "actor": "bot",
+          "repeat": 8,
+          "every": 40,
+          "events": [
+            {"offset": 0, "path": "/synthetic/scenario-pair-alpha"},
+            {"offset": 1, "path": "/synthetic/scenario-pair-beta"}
+          ]
+        }
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["bot"],
+          "proofs": {"bot": ["repeated-pair"]}
+        },
+        "live": {
+          "emissions": [
+            {"actor": "bot", "action": "ban", "reasons": ["repeated-pair"]}
+          ]
+        }
+      }
+    },
+    {
+      "name": "low_context_revisit_same_target_root_referrer",
+      "actors": {
+        "bot": {
+          "ip": "doc:1:67",
+          "ua": "chrome_120",
+          "referer": "https://reader.example.test/"
+        }
+      },
+      "events": [
+        {
+          "actor": "bot",
+          "repeat": 10,
+          "every": 60,
+          "path": "/synthetic/scenario-low-context-revisit"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["bot"],
+          "proofs": {"bot": ["low-context-revisit"]}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {
+              "actor": "bot",
+              "action": "ban",
+              "reasons": ["low-context-revisit"]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "low_context_revisit_short_span_stays_clean",
+      "actors": {
+        "reader": {
+          "ip": "doc:1:68",
+          "ua": "chrome_120",
+          "referer": "https://reader.example.test/"
+        }
+      },
+      "events": [
+        {
+          "actor": "reader",
+          "repeat": 10,
+          "every": 10,
+          "path": "/synthetic/scenario-low-context-revisit"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["reader"],
+          "absent_proofs": {"reader": ["low-context-revisit"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["reader"]
+        }
+      }
+    },
+    {
+      "name": "asset_primed_probe_after_dependency_load",
+      "actors": {
+        "bot": {"ip": "doc:1:65", "ua": "chrome_120", "referer": "none"},
+        "reader": {"ip": "doc:1:66", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {"actor": "bot", "at": 0, "path": "/synthetic/scenario-rendered-page"},
+        {
+          "actor": "bot",
+          "at": 0.1,
+          "path": "/synthetic/js?v=scenario",
+          "referer": "https://reader.example.test/synthetic/scenario-rendered-page"
+        },
+        {
+          "actor": "bot",
+          "at": 0.2,
+          "path": "/synthetic/style?v=scenario",
+          "referer": "https://reader.example.test/synthetic/scenario-rendered-page"
+        },
+        {
+          "actor": "bot",
+          "at": 0.3,
+          "path": "/synthetic/.git/HEAD",
+          "referer": "https://reader.example.test/synthetic/scenario-rendered-page"
+        },
+        {
+          "actor": "bot",
+          "at": 0.4,
+          "path": "/synthetic/.git/config",
+          "referer": "https://reader.example.test/synthetic/scenario-rendered-page"
+        },
+        {"actor": "reader", "at": 2, "path": "/synthetic/scenario-reader-page"},
+        {
+          "actor": "reader",
+          "at": 2.1,
+          "path": "/synthetic/js?v=reader",
+          "referer": "https://reader.example.test/synthetic/scenario-reader-page"
+        },
+        {
+          "actor": "reader",
+          "at": 2.2,
+          "path": "/synthetic/style?v=reader",
+          "referer": "https://reader.example.test/synthetic/scenario-reader-page"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["bot"],
+          "clean": ["reader"],
+          "proofs": {"bot": ["asset-primed-probe"]},
+          "absent_proofs": {"reader": ["asset-primed-probe"]}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "bot", "action": "ban", "reasons": ["asset-primed-probe"]}
+          ],
+          "no_emissions": ["reader"]
+        }
+      }
+    }
+  ]
+}

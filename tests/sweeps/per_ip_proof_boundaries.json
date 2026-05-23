@@ -1,0 +1,988 @@
+{
+  "sweeps": [
+    {
+      "name": "fast_streak_unique_total_boundary",
+      "base": {
+        "args": {
+          "multi_fetch_count": 100,
+          "sweep_count": 100,
+          "serial_count": 100,
+          "ban_score": 999,
+          "suspect_score": 999,
+          "emit_suspects": true
+        },
+        "actors": {
+          "source": {"ip": "doc:1:164", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0.0, "path": "/synthetic/sweep-fast-unique-a"},
+          {"actor": "source", "at": 0.5, "path": "/synthetic/sweep-fast-unique-b"},
+          {"actor": "source", "at": 1.0, "path": "/synthetic/sweep-fast-unique-c"},
+          {"actor": "source", "at": 1.5, "path": "/synthetic/sweep-fast-unique-d"},
+          {"actor": "source", "at": 2.0, "path": "/synthetic/sweep-fast-unique-e"},
+          {"actor": "source", "at": 2.5, "path": "/synthetic/sweep-fast-unique-f"},
+          {"actor": "source", "at": 3.0, "path": "/synthetic/sweep-fast-unique-g"},
+          {"actor": "source", "at": 3.5, "path": "/synthetic/sweep-fast-unique-h"},
+          {"actor": "source", "at": 4.0, "path": "/synthetic/sweep-fast-unique-i"},
+          {"actor": "source", "at": 4.5, "path": "/synthetic/sweep-fast-unique-j"},
+          {"actor": "source", "at": 5.0, "path": "/synthetic/sweep-fast-unique-k"},
+          {"actor": "source", "at": 5.5, "path": "/synthetic/sweep-fast-unique-l"},
+          {"actor": "source", "at": 6.0, "path": "/synthetic/sweep-fast-unique-a"},
+          {"actor": "source", "at": 6.5, "path": "/synthetic/sweep-fast-unique-b"},
+          {"actor": "source", "at": 7.0, "path": "/synthetic/sweep-fast-unique-a"},
+          {"actor": "source", "at": 7.5, "path": "/synthetic/sweep-fast-unique-b"},
+          {"actor": "source", "at": 8.0, "path": "/synthetic/sweep-fast-unique-a"},
+          {"actor": "source", "at": 8.5, "path": "/synthetic/sweep-fast-unique-b"},
+          {"actor": "source", "at": 9.0, "path": "/synthetic/sweep-fast-unique-a"},
+          {"actor": "source", "at": 9.5, "path": "/synthetic/sweep-fast-unique-b"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "reasons": {"source": ["fast-streak"]},
+            "actions": {"source": "suspect"}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "suspect", "reasons": ["fast-streak"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_unique_path_short_stays_clean",
+          "covers": [
+            {"kind": "fast-streak", "args": ["streak_unique_total"], "boundary": "below"}
+          ],
+          "set": {
+            "events.11.path": "/synthetic/sweep-fast-unique-a",
+            "expect.batch.bots": [],
+            "expect.batch.reasons": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_reasons": {"source": ["fast-streak"]},
+            "expect.batch.actions": {"source": "clean"},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_unique_total_threshold_fires",
+          "covers": [
+            {"kind": "fast-streak", "args": ["streak_unique_total"], "boundary": "at"}
+          ],
+          "set": {
+            "events.11.path": "/synthetic/sweep-fast-unique-l"
+          }
+        }
+      ]
+    },
+    {
+      "name": "repeated_pair_gap_boundary",
+      "base": {
+        "actors": {
+          "source": {"ip": "doc:1:165", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {
+            "actor": "source",
+            "repeat": 8,
+            "every": 40,
+            "events": [
+              {"offset": 0, "path": "/synthetic/sweep-pair-gap-alpha"},
+              {"offset": 8, "path": "/synthetic/sweep-pair-gap-beta"}
+            ]
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["repeated-pair"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["repeated-pair"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "at_gap_threshold_fires",
+          "covers": [
+            {"kind": "repeated-pair", "args": ["pair_gap_seconds"], "boundary": "at"}
+          ],
+          "set": {
+            "events.0.events.1.offset": 8
+          }
+        },
+        {
+          "name": "above_gap_threshold_stays_clean",
+          "covers": [
+            {"kind": "repeated-pair", "args": ["pair_gap_seconds"], "boundary": "above"}
+          ],
+          "set": {
+            "events.0.events.1.offset": 8.1,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["repeated-pair"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "tight_multifetch_count_boundary",
+      "base": {
+        "args": {},
+        "actors": {
+          "source": {"ip": "doc:1:166", "ua": "firefox_150", "referer": "referrer"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-multifetch-count-a"},
+          {"actor": "source", "at": 1, "path": "/synthetic/sweep-multifetch-count-b"},
+          {"actor": "source", "at": 25, "path": "/synthetic/sweep-multifetch-count-a"},
+          {"actor": "source", "at": 28, "path": "/synthetic/sweep-multifetch-count-b"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["tight-multifetch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["tight-multifetch"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_below_stays_clean",
+          "covers": [
+            {"kind": "tight-multifetch", "args": ["multi_fetch_count"], "boundary": "below"}
+          ],
+          "set": {
+            "args.multi_fetch_count": 5,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["tight-multifetch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_threshold_fires",
+          "covers": [
+            {"kind": "tight-multifetch", "args": ["multi_fetch_count"], "boundary": "at"}
+          ],
+          "set": {
+            "args.multi_fetch_count": 4
+          }
+        }
+      ]
+    },
+    {
+      "name": "tight_multifetch_unique_paths_boundary",
+      "base": {
+        "args": {},
+        "actors": {
+          "source": {"ip": "doc:1:167", "ua": "firefox_150", "referer": "referrer"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-multifetch-unique-a"},
+          {"actor": "source", "at": 1, "path": "/synthetic/sweep-multifetch-unique-b"},
+          {"actor": "source", "at": 25, "path": "/synthetic/sweep-multifetch-unique-a"},
+          {"actor": "source", "at": 28, "path": "/synthetic/sweep-multifetch-unique-b"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["tight-multifetch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["tight-multifetch"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_unique_path_short_stays_clean",
+          "covers": [
+            {"kind": "tight-multifetch", "args": ["multi_fetch_unique_paths"], "boundary": "below"}
+          ],
+          "set": {
+            "args.multi_fetch_unique_paths": 3,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["tight-multifetch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_unique_path_threshold_fires",
+          "covers": [
+            {"kind": "tight-multifetch", "args": ["multi_fetch_unique_paths"], "boundary": "at"}
+          ],
+          "set": {
+            "args.multi_fetch_unique_paths": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "tight_multifetch_repeat_paths_boundary",
+      "base": {
+        "args": {},
+        "actors": {
+          "source": {"ip": "doc:1:168", "ua": "firefox_150", "referer": "referrer"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-multifetch-repeat-a"},
+          {"actor": "source", "at": 1, "path": "/synthetic/sweep-multifetch-repeat-b"},
+          {"actor": "source", "at": 25, "path": "/synthetic/sweep-multifetch-repeat-a"},
+          {"actor": "source", "at": 28, "path": "/synthetic/sweep-multifetch-repeat-b"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["tight-multifetch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["tight-multifetch"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_repeat_path_short_stays_clean",
+          "covers": [
+            {"kind": "tight-multifetch", "args": ["multi_fetch_repeat_paths"], "boundary": "below"}
+          ],
+          "set": {
+            "args.multi_fetch_repeat_paths": 3,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["tight-multifetch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_repeat_path_threshold_fires",
+          "covers": [
+            {"kind": "tight-multifetch", "args": ["multi_fetch_repeat_paths"], "boundary": "at"}
+          ],
+          "set": {
+            "args.multi_fetch_repeat_paths": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "tight_multifetch_same_second_boundary",
+      "base": {
+        "args": {
+          "multi_fetch_repeat_paths": 99
+        },
+        "actors": {
+          "source": {"ip": "doc:1:169", "ua": "firefox_150", "referer": "referrer"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-multifetch-second-a"},
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-multifetch-second-b"},
+          {"actor": "source", "at": 25, "path": "/synthetic/sweep-multifetch-second-c"},
+          {"actor": "source", "at": 28, "path": "/synthetic/sweep-multifetch-second-d"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["tight-multifetch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["tight-multifetch"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_same_second_path_short_stays_clean",
+          "covers": [
+            {
+              "kind": "tight-multifetch",
+              "args": ["multi_fetch_same_second_unique_paths"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.multi_fetch_same_second_unique_paths": 3,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["tight-multifetch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_same_second_path_threshold_fires",
+          "covers": [
+            {
+              "kind": "tight-multifetch",
+              "args": ["multi_fetch_same_second_unique_paths"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.multi_fetch_same_second_unique_paths": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "tight_multifetch_window_boundary",
+      "base": {
+        "args": {},
+        "actors": {
+          "source": {"ip": "doc:1:170", "ua": "firefox_150", "referer": "referrer"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-multifetch-window-a"},
+          {"actor": "source", "at": 1, "path": "/synthetic/sweep-multifetch-window-b"},
+          {"actor": "source", "at": 25, "path": "/synthetic/sweep-multifetch-window-a"},
+          {"actor": "source", "at": 28, "path": "/synthetic/sweep-multifetch-window-b"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["tight-multifetch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["tight-multifetch"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "at_window_threshold_fires",
+          "covers": [
+            {"kind": "tight-multifetch", "args": ["multi_fetch_window_seconds"], "boundary": "at"}
+          ],
+          "set": {
+            "args.multi_fetch_window_seconds": 28
+          }
+        },
+        {
+          "name": "below_window_threshold_stays_clean",
+          "covers": [
+            {"kind": "tight-multifetch", "args": ["multi_fetch_window_seconds"], "boundary": "below"}
+          ],
+          "set": {
+            "args.multi_fetch_window_seconds": 27.9,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["tight-multifetch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "tight_multifetch_referer_ratio_boundary",
+      "base": {
+        "actors": {
+          "source": {"ip": "doc:1:171", "ua": "firefox_150", "referer": "referrer"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-multifetch-ratio-a"},
+          {"actor": "source", "at": 1, "path": "/synthetic/sweep-multifetch-ratio-b"},
+          {"actor": "source", "at": 2, "path": "/synthetic/sweep-multifetch-ratio-a"},
+          {"actor": "source", "at": 3, "path": "/synthetic/sweep-multifetch-ratio-b"},
+          {"actor": "source", "at": 4, "path": "/synthetic/sweep-multifetch-ratio-c", "referer": "alt_referrer"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["tight-multifetch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["tight-multifetch"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "below_ratio_stays_clean",
+          "covers": [
+            {
+              "kind": "tight-multifetch",
+              "args": ["multi_fetch_dominant_referer_ratio"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "events.3.referer": "alt_referrer",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["tight-multifetch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_ratio_threshold_fires",
+          "covers": [
+            {
+              "kind": "tight-multifetch",
+              "args": ["multi_fetch_dominant_referer_ratio"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "events.3.referer": "referrer"
+          }
+        }
+      ]
+    },
+    {
+      "name": "asset_primed_probe_boundaries",
+      "base": {
+        "args": {
+          "exposure_probe_window_seconds": 5.0,
+          "exposure_probe_asset_count": 2,
+          "exposure_probe_count": 2
+        },
+        "actors": {
+          "source": {"ip": "doc:1:178", "ua": "chrome_133", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-rendered-page"},
+          {
+            "actor": "source",
+            "at": 1,
+            "path": "/synthetic/js?v=sweep",
+            "referer": "https://reader.example.test/synthetic/sweep-rendered-page"
+          },
+          {
+            "actor": "source",
+            "at": 2,
+            "path": "/synthetic/style?v=sweep",
+            "referer": "https://reader.example.test/synthetic/sweep-rendered-page"
+          },
+          {
+            "actor": "source",
+            "at": 4,
+            "path": "/synthetic/.git/HEAD",
+            "referer": "https://reader.example.test/synthetic/sweep-rendered-page"
+          },
+          {
+            "actor": "source",
+            "at": 5,
+            "path": "/synthetic/.git/config",
+            "referer": "https://reader.example.test/synthetic/sweep-rendered-page"
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["asset-primed-probe"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["asset-primed-probe"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "below_window_stays_clean",
+          "covers": [
+            {
+              "kind": "asset-primed-probe",
+              "args": ["exposure_probe_window_seconds"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.exposure_probe_window_seconds": 4.9,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["asset-primed-probe"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_window_threshold_fires",
+          "covers": [
+            {
+              "kind": "asset-primed-probe",
+              "args": ["exposure_probe_window_seconds"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.exposure_probe_window_seconds": 5.0
+          }
+        },
+        {
+          "name": "one_asset_short_stays_clean",
+          "covers": [
+            {
+              "kind": "asset-primed-probe",
+              "args": ["exposure_probe_asset_count"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.exposure_probe_asset_count": 3,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["asset-primed-probe"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_asset_threshold_fires",
+          "covers": [
+            {
+              "kind": "asset-primed-probe",
+              "args": ["exposure_probe_asset_count"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.exposure_probe_asset_count": 2
+          }
+        },
+        {
+          "name": "one_probe_short_stays_clean",
+          "covers": [
+            {
+              "kind": "asset-primed-probe",
+              "args": ["exposure_probe_count"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.exposure_probe_count": 3,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["asset-primed-probe"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_probe_threshold_fires",
+          "covers": [
+            {
+              "kind": "asset-primed-probe",
+              "args": ["exposure_probe_count"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.exposure_probe_count": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "cadenced_repeat_count_boundary",
+      "base": {
+        "args": {"cadence_hour_repeat_count": 99},
+        "actors": {
+          "source": {"ip": "doc:1:172", "ua": "chrome_133", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-cadence-count"},
+          {"actor": "source", "at": 3600, "path": "/synthetic/sweep-cadence-count"},
+          {"actor": "source", "at": 7200, "path": "/synthetic/sweep-cadence-count"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["cadenced-repeat"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["cadenced-repeat"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_repeat_short_stays_clean",
+          "covers": [
+            {"kind": "cadenced-repeat", "args": ["cadence_repeat_count"], "boundary": "below"}
+          ],
+          "set": {
+            "args.cadence_repeat_count": 4,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["cadenced-repeat"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_repeat_threshold_fires",
+          "covers": [
+            {"kind": "cadenced-repeat", "args": ["cadence_repeat_count"], "boundary": "at"}
+          ],
+          "set": {
+            "args.cadence_repeat_count": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "cadenced_repeat_min_gap_boundary",
+      "base": {
+        "args": {},
+        "actors": {
+          "source": {"ip": "doc:1:173", "ua": "chrome_133", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-cadence-gap"},
+          {"actor": "source", "at": 3000, "path": "/synthetic/sweep-cadence-gap"},
+          {"actor": "source", "at": 6000, "path": "/synthetic/sweep-cadence-gap"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["cadenced-repeat"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["cadenced-repeat"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "at_min_gap_threshold_fires",
+          "covers": [
+            {"kind": "cadenced-repeat", "args": ["cadence_min_gap_seconds"], "boundary": "at"}
+          ],
+          "set": {
+            "args.cadence_min_gap_seconds": 3000
+          }
+        },
+        {
+          "name": "above_min_gap_threshold_stays_clean",
+          "covers": [
+            {"kind": "cadenced-repeat", "args": ["cadence_min_gap_seconds"], "boundary": "above"}
+          ],
+          "set": {
+            "args.cadence_min_gap_seconds": 3001,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["cadenced-repeat"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "cadenced_repeat_referer_ratio_boundary",
+      "base": {
+        "args": {
+          "cadence_repeat_count": 5,
+          "cadence_hour_repeat_count": 99
+        },
+        "actors": {
+          "source": {"ip": "doc:1:174", "ua": "chrome_133", "referer": "referrer"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-cadence-ratio"},
+          {"actor": "source", "at": 3600, "path": "/synthetic/sweep-cadence-ratio"},
+          {"actor": "source", "at": 7200, "path": "/synthetic/sweep-cadence-ratio"},
+          {"actor": "source", "at": 10800, "path": "/synthetic/sweep-cadence-ratio"},
+          {"actor": "source", "at": 14400, "path": "/synthetic/sweep-cadence-ratio", "referer": "alt_referrer"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["cadenced-repeat"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["cadenced-repeat"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "below_ratio_stays_clean",
+          "covers": [
+            {
+              "kind": "cadenced-repeat",
+              "args": ["cadence_dominant_referer_ratio"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "events.3.referer": "alt_referrer",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["cadenced-repeat"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_ratio_threshold_fires",
+          "covers": [
+            {
+              "kind": "cadenced-repeat",
+              "args": ["cadence_dominant_referer_ratio"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "events.3.referer": "referrer"
+          }
+        }
+      ]
+    },
+    {
+      "name": "cadenced_repeat_hour_count_boundary",
+      "base": {
+        "args": {},
+        "actors": {
+          "source": {"ip": "doc:1:175", "ua": "chrome_133", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-cadence-hour-count"},
+          {"actor": "source", "at": 3660, "path": "/synthetic/sweep-cadence-hour-count"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["cadenced-repeat"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["cadenced-repeat"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_hour_hit_short_stays_clean",
+          "covers": [
+            {
+              "kind": "cadenced-repeat",
+              "args": ["cadence_hour_repeat_count"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.cadence_hour_repeat_count": 3,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["cadenced-repeat"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_hour_repeat_threshold_fires",
+          "covers": [
+            {
+              "kind": "cadenced-repeat",
+              "args": ["cadence_hour_repeat_count"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.cadence_hour_repeat_count": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "cadenced_repeat_hour_gap_target_boundary",
+      "base": {
+        "args": {},
+        "actors": {
+          "source": {"ip": "doc:1:176", "ua": "chrome_133", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-cadence-hour-target"},
+          {"actor": "source", "at": 3600, "path": "/synthetic/sweep-cadence-hour-target"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["cadenced-repeat"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["cadenced-repeat"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "below_target_stays_clean",
+          "covers": [
+            {
+              "kind": "cadenced-repeat",
+              "args": ["cadence_hour_gap_seconds"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.cadence_hour_gap_seconds": 3479,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["cadenced-repeat"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_hour_target_fires",
+          "covers": [
+            {
+              "kind": "cadenced-repeat",
+              "args": ["cadence_hour_gap_seconds"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.cadence_hour_gap_seconds": 3600
+          }
+        }
+      ]
+    },
+    {
+      "name": "cadenced_repeat_hour_gap_tolerance_boundary",
+      "base": {
+        "args": {"cadence_hour_gap_tolerance_seconds": 61},
+        "actors": {
+          "source": {"ip": "doc:1:177", "ua": "chrome_133", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-cadence-hour-tolerance"},
+          {"actor": "source", "at": 3661, "path": "/synthetic/sweep-cadence-hour-tolerance"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["cadenced-repeat"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["cadenced-repeat"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "below_tolerance_stays_clean",
+          "covers": [
+            {
+              "kind": "cadenced-repeat",
+              "args": ["cadence_hour_gap_tolerance_seconds"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.cadence_hour_gap_tolerance_seconds": 60,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["cadenced-repeat"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_tolerance_fires",
+          "covers": [
+            {
+              "kind": "cadenced-repeat",
+              "args": ["cadence_hour_gap_tolerance_seconds"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.cadence_hour_gap_tolerance_seconds": 61
+          }
+        }
+      ]
+    }
+  ]
+}
