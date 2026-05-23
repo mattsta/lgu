@@ -1,0 +1,47 @@
+[project]
+name = "lgu"
+version = "0.1.0"
+description = "LGU, the Log Ghoul Unmasker: access-log analysis tools for detecting crawler abuse, distributed sweeps, and suspicious live traffic."
+readme = "README.md"
+# Keep as minimum 3.11 so it still works under pypy for now
+requires-python = ">=3.11"
+keywords = ["logs", "security", "crawler-detection", "access-logs", "fail2ban", "bot-detection"]
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.152.9",
+    "pytest>=8.0",
+    "pytest-xdist>=3.8.0",
+    "ruff>=0.15.14",
+]
+
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+log-audit = "lgu.audit:main"
+log-watch = "lgu.watch:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lgu"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src/lgu",
+  "/defaults/*.json",
+  "/examples/**/*.example",
+  "/examples/**/*.conf",
+  "/examples/**/*.json",
+  "/README.md",
+  "/docs/*.md",
+  "/pyproject.toml"
+]
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.uv]
+package = true
+default-groups = []

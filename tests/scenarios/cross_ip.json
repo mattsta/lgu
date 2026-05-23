@@ -1,0 +1,153 @@
+{
+  "scenarios": [
+    {
+      "name": "coordinated_ua_threshold_row",
+      "args": {
+        "coord_window_seconds": 10.0,
+        "coord_count": 3,
+        "coord_unique_paths": 3,
+        "coord_unique_ips": 3
+      },
+      "actors": {
+        "bot_a": {"ip": "doc:1:80", "ua": "shared", "referer": "none"},
+        "bot_b": {"ip": "doc:1:81", "ua": "shared", "referer": "none"},
+        "bot_c": {"ip": "doc:1:82", "ua": "shared", "referer": "none"}
+      },
+      "events": [
+        {"actor": "bot_a", "at": 0, "path": "/synthetic/scenario-coord-a"},
+        {"actor": "bot_b", "at": 1, "path": "/synthetic/scenario-coord-b"},
+        {"actor": "bot_c", "at": 2, "path": "/synthetic/scenario-coord-c"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["bot_a", "bot_b", "bot_c"],
+          "proofs": {
+            "bot_a": ["coordinated-ua"],
+            "bot_b": ["coordinated-ua"],
+            "bot_c": ["coordinated-ua"]
+          }
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "bot_c", "action": "ban", "reasons": ["coordinated-ua"]}
+          ],
+          "no_emissions": ["bot_a", "bot_b"]
+        }
+      }
+    },
+    {
+      "name": "target_fanout_query_variants_collapse",
+      "args": {
+        "target_fanout_count": 3,
+        "target_fanout_unique_ips": 3,
+        "target_fanout_window_seconds": 30.0
+      },
+      "actors": {
+        "bot_a": {"ip": "doc:2:80", "ua": "chrome_win_134", "referer": "referrer"},
+        "bot_b": {"ip": "doc:2:81", "ua": "chrome_win_135", "referer": "referrer"},
+        "bot_c": {"ip": "doc:2:82", "ua": "chrome_win_135", "referer": "referrer"}
+      },
+      "events": [
+        {"actor": "bot_a", "at": 0, "path": "/synthetic/scenario-fanout-target?variant=0"},
+        {"actor": "bot_b", "at": 1, "path": "/synthetic/scenario-fanout-target?variant=1"},
+        {"actor": "bot_c", "at": 2, "path": "/synthetic/scenario-fanout-target?variant=2"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["bot_a", "bot_b", "bot_c"],
+          "proofs": {
+            "bot_a": ["coordinated-target-fanout"],
+            "bot_b": ["coordinated-target-fanout"],
+            "bot_c": ["coordinated-target-fanout"]
+          }
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {
+              "actor": "bot_c",
+              "action": "ban",
+              "reasons": ["coordinated-target-fanout"]
+            }
+          ],
+          "no_emissions": ["bot_a", "bot_b"]
+        }
+      }
+    },
+    {
+      "name": "same_ua_target_fanout_tight_distributed_burst",
+      "actors": {
+        "bot_a": {"ip": "doc:2:90", "ua": "shared", "referer": "none"},
+        "bot_b": {"ip": "doc:2:91", "ua": "shared", "referer": "none"},
+        "bot_c": {"ip": "doc:2:92", "ua": "shared", "referer": "none"}
+      },
+      "events": [
+        {"actor": "bot_a", "at": 0, "path": "/synthetic/scenario-exact-ua-fanout-target"},
+        {"actor": "bot_b", "at": 1, "path": "/synthetic/scenario-exact-ua-fanout-target"},
+        {"actor": "bot_c", "at": 2, "path": "/synthetic/scenario-exact-ua-fanout-target"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["bot_a", "bot_b", "bot_c"],
+          "proofs": {
+            "bot_a": ["coordinated-target-fanout"],
+            "bot_b": ["coordinated-target-fanout"],
+            "bot_c": ["coordinated-target-fanout"]
+          }
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {
+              "actor": "bot_c",
+              "action": "ban",
+              "reasons": ["coordinated-target-fanout"]
+            }
+          ],
+          "no_emissions": ["bot_a", "bot_b"]
+        }
+      }
+    },
+    {
+      "name": "payload_campaign_configured_marker",
+      "args": {
+        "detector_config": {"payload_marker_patterns": ["render=full"]},
+        "payload_campaign_count": 3,
+        "payload_campaign_unique_ips": 3,
+        "payload_campaign_unique_paths": 3,
+        "payload_campaign_window_seconds": 30.0
+      },
+      "actors": {
+        "bot_a": {"ip": "doc:3:80", "ua": "chrome_120", "referer": "none"},
+        "bot_b": {"ip": "doc:3:81", "ua": "chrome_120", "referer": "none"},
+        "bot_c": {"ip": "doc:3:82", "ua": "chrome_120", "referer": "none"},
+        "clean": {"ip": "doc:3:83", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {"actor": "clean", "at": 0, "path": "/synthetic/scenario-no-marker"},
+        {"actor": "bot_a", "at": 1, "path": "/synthetic/scenario-payload-a?render=full"},
+        {"actor": "bot_b", "at": 2, "path": "/synthetic/scenario-payload-b?render=full"},
+        {"actor": "bot_c", "at": 3, "path": "/synthetic/scenario-payload-c?render=full"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["bot_a", "bot_b", "bot_c"],
+          "clean": ["clean"],
+          "proofs": {
+            "bot_a": ["payload-campaign"],
+            "bot_b": ["payload-campaign"],
+            "bot_c": ["payload-campaign"]
+          }
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "bot_c", "action": "ban", "reasons": ["payload-campaign"]}
+          ],
+          "no_emissions": ["clean", "bot_a", "bot_b"]
+        }
+      }
+    }
+  ]
+}

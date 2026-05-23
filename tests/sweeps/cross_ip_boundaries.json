@@ -1,0 +1,80 @@
+{
+  "sweeps": [
+    {
+      "name": "target_fanout_unique_ip_boundary",
+      "base": {
+        "args": {
+          "target_fanout_window_seconds": 60.0,
+          "target_fanout_count": 5,
+          "target_fanout_unique_ips": 5
+        },
+        "actors": {
+          "source_a": {"ip": "doc:1:140", "ua": "chrome_win_134", "referer": "referrer"},
+          "source_b": {"ip": "doc:1:141", "ua": "chrome_win_135", "referer": "referrer"},
+          "source_c": {"ip": "doc:1:142", "ua": "chrome_mac_135", "referer": "referrer"},
+          "source_d": {"ip": "doc:1:143", "ua": "chrome_133", "referer": "referrer"},
+          "source_e": {"ip": "doc:1:144", "ua": "chrome_120", "referer": "referrer"}
+        },
+        "events": [
+          {"actor": "source_a", "at": 0, "path": "/synthetic/sweep-fanout?variant=0"},
+          {"actor": "source_b", "at": 1, "path": "/synthetic/sweep-fanout?variant=1"},
+          {"actor": "source_c", "at": 2, "path": "/synthetic/sweep-fanout?variant=2"},
+          {"actor": "source_d", "at": 3, "path": "/synthetic/sweep-fanout?variant=3"},
+          {"actor": "source_e", "at": 4, "path": "/synthetic/sweep-fanout?variant=4"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["*"],
+            "proofs": {"*": ["coordinated-target-fanout"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {
+                "actor": "source_e",
+                "action": "ban",
+                "reasons": ["coordinated-target-fanout"]
+              }
+            ],
+            "no_emissions": ["source_a", "source_b", "source_c", "source_d"]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_ip_short_stays_clean",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_unique_ips"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "events.4.actor": "source_d",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["coordinated-target-fanout"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "at_unique_ip_threshold_fires",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_unique_ips"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "events.4.actor": "source_e"
+          }
+        }
+      ]
+    }
+  ]
+}

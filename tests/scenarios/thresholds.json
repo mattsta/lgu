@@ -1,0 +1,320 @@
+{
+  "scenarios": [
+    {
+      "name": "repeated_pair_below_threshold_stays_clean",
+      "actors": {
+        "source": {"ip": "doc:1:100", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {
+          "actor": "source",
+          "repeat": 7,
+          "every": 40,
+          "events": [
+            {"offset": 0, "path": "/synthetic/threshold-pair-alpha"},
+            {"offset": 1, "path": "/synthetic/threshold-pair-beta"}
+          ]
+        }
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["source"],
+          "absent_proofs": {"source": ["repeated-pair"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["source"]
+        }
+      }
+    },
+    {
+      "name": "tight_multifetch_referer_ratio_below_threshold_stays_clean",
+      "actors": {
+        "source": {"ip": "doc:1:101", "ua": "firefox_150", "referer": "referrer"}
+      },
+      "events": [
+        {"actor": "source", "at": 0, "path": "/synthetic/threshold-multifetch-a", "referer": "referrer"},
+        {"actor": "source", "at": 0, "path": "/synthetic/threshold-multifetch-b", "referer": "alt_referrer"},
+        {"actor": "source", "at": 25, "path": "/synthetic/threshold-multifetch-a", "referer": "referrer"},
+        {"actor": "source", "at": 28, "path": "/synthetic/threshold-multifetch-b", "referer": "alt_referrer"}
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["source"],
+          "absent_proofs": {"source": ["tight-multifetch"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["source"]
+        }
+      }
+    },
+    {
+      "name": "coordinated_ua_too_few_ips_stays_clean",
+      "args": {
+        "coord_window_seconds": 10.0,
+        "coord_count": 3,
+        "coord_unique_paths": 3,
+        "coord_unique_ips": 3
+      },
+      "actors": {
+        "source_a": {"ip": "doc:1:102", "ua": "shared", "referer": "none"},
+        "source_b": {"ip": "doc:1:103", "ua": "shared", "referer": "none"}
+      },
+      "events": [
+        {"actor": "source_a", "at": 0, "path": "/synthetic/threshold-coord-a"},
+        {"actor": "source_a", "at": 1, "path": "/synthetic/threshold-coord-b"},
+        {"actor": "source_b", "at": 2, "path": "/synthetic/threshold-coord-c"}
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["source_a", "source_b"],
+          "absent_proofs": {
+            "source_a": ["coordinated-ua"],
+            "source_b": ["coordinated-ua"]
+          }
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["source_a", "source_b"]
+        }
+      }
+    },
+    {
+      "name": "payload_campaign_marker_without_diverse_paths_stays_clean",
+      "args": {
+        "detector_config": {"payload_marker_patterns": ["render=full"]},
+        "payload_campaign_count": 3,
+        "payload_campaign_unique_ips": 3,
+        "payload_campaign_unique_paths": 3,
+        "payload_campaign_window_seconds": 30.0,
+        "target_fanout_same_ua_count": 100
+      },
+      "actors": {
+        "source_a": {"ip": "doc:2:100", "ua": "chrome_120", "referer": "none"},
+        "source_b": {"ip": "doc:2:101", "ua": "chrome_120", "referer": "none"},
+        "source_c": {"ip": "doc:2:102", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {"actor": "source_a", "at": 0, "path": "/synthetic/threshold-payload?render=full&a=1"},
+        {"actor": "source_b", "at": 1, "path": "/synthetic/threshold-payload?render=full&a=2"},
+        {"actor": "source_c", "at": 2, "path": "/synthetic/threshold-payload?render=full&a=3"}
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["source_a", "source_b", "source_c"],
+          "absent_proofs": {
+            "source_a": ["payload-campaign"],
+            "source_b": ["payload-campaign"],
+            "source_c": ["payload-campaign"]
+          }
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["source_a", "source_b", "source_c"]
+        }
+      }
+    },
+    {
+      "name": "coordinated_ua_outside_window_stays_clean",
+      "args": {
+        "coord_window_seconds": 10.0,
+        "coord_count": 3,
+        "coord_unique_paths": 3,
+        "coord_unique_ips": 3
+      },
+      "actors": {
+        "source_a": {"ip": "doc:2:103", "ua": "shared", "referer": "none"},
+        "source_b": {"ip": "doc:2:104", "ua": "shared", "referer": "none"},
+        "source_c": {"ip": "doc:2:105", "ua": "shared", "referer": "none"}
+      },
+      "events": [
+        {"actor": "source_a", "at": 0, "path": "/synthetic/coord-window-a"},
+        {"actor": "source_b", "at": 1, "path": "/synthetic/coord-window-b"},
+        {"actor": "source_c", "at": 11.1, "path": "/synthetic/coord-window-c"}
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["*"],
+          "absent_proofs": {"*": ["coordinated-ua"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["*"]
+        }
+      }
+    },
+    {
+      "name": "coordinated_ua_path_diversity_one_short_stays_clean",
+      "args": {
+        "coord_window_seconds": 10.0,
+        "coord_count": 3,
+        "coord_unique_paths": 3,
+        "coord_unique_ips": 3
+      },
+      "actors": {
+        "source_a": {"ip": "doc:2:106", "ua": "shared", "referer": "none"},
+        "source_b": {"ip": "doc:2:107", "ua": "shared", "referer": "none"},
+        "source_c": {"ip": "doc:2:108", "ua": "shared", "referer": "none"}
+      },
+      "events": [
+        {"actor": "source_a", "at": 0, "path": "/synthetic/coord-low-diversity-a"},
+        {"actor": "source_b", "at": 1, "path": "/synthetic/coord-low-diversity-b"},
+        {"actor": "source_c", "at": 2, "path": "/synthetic/coord-low-diversity-a"}
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["*"],
+          "absent_proofs": {"*": ["coordinated-ua"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["*"]
+        }
+      }
+    },
+    {
+      "name": "target_fanout_outside_window_stays_clean",
+      "args": {
+        "target_fanout_window_seconds": 60.0,
+        "target_fanout_count": 5,
+        "target_fanout_unique_ips": 5
+      },
+      "actors": {
+        "source_a": {"ip": "doc:2:109", "ua": "chrome_win_134", "referer": "referrer"},
+        "source_b": {"ip": "doc:2:110", "ua": "chrome_win_135", "referer": "referrer"},
+        "source_c": {"ip": "doc:2:111", "ua": "chrome_mac_135", "referer": "referrer"},
+        "source_d": {"ip": "doc:2:112", "ua": "chrome_133", "referer": "referrer"},
+        "source_e": {"ip": "doc:2:113", "ua": "chrome_120", "referer": "referrer"}
+      },
+      "events": [
+        {"actor": "source_a", "at": 0, "path": "/synthetic/fanout-window?variant=0"},
+        {"actor": "source_b", "at": 15.5, "path": "/synthetic/fanout-window?variant=1"},
+        {"actor": "source_c", "at": 31, "path": "/synthetic/fanout-window?variant=2"},
+        {"actor": "source_d", "at": 46.5, "path": "/synthetic/fanout-window?variant=3"},
+        {"actor": "source_e", "at": 62, "path": "/synthetic/fanout-window?variant=4"}
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["*"],
+          "absent_proofs": {"*": ["coordinated-target-fanout"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["*"]
+        }
+      }
+    },
+    {
+      "name": "payload_campaign_outside_window_stays_clean",
+      "args": {
+        "detector_config": {"payload_marker_patterns": ["render=full"]},
+        "payload_campaign_window_seconds": 10.0,
+        "payload_campaign_count": 3,
+        "payload_campaign_unique_ips": 3,
+        "payload_campaign_unique_paths": 3
+      },
+      "actors": {
+        "source_a": {"ip": "doc:2:114", "ua": "chrome_120", "referer": "none"},
+        "source_b": {"ip": "doc:2:115", "ua": "chrome_120", "referer": "none"},
+        "source_c": {"ip": "doc:2:116", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {"actor": "source_a", "at": 0, "path": "/synthetic/payload-window-a?render=full"},
+        {"actor": "source_b", "at": 6, "path": "/synthetic/payload-window-b?render=full"},
+        {"actor": "source_c", "at": 12, "path": "/synthetic/payload-window-c?render=full"}
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["*"],
+          "absent_proofs": {"*": ["payload-campaign"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["*"]
+        }
+      }
+    },
+    {
+      "name": "target_fanout_exact_referer_ratio_edge_fires",
+      "args": {
+        "target_fanout_window_seconds": 60.0,
+        "target_fanout_count": 5,
+        "target_fanout_unique_ips": 5,
+        "target_fanout_dominant_referer_ratio": 0.8
+      },
+      "actors": {
+        "source_a": {"ip": "doc:3:109", "ua": "chrome_win_134", "referer": "referrer"},
+        "source_b": {"ip": "doc:3:110", "ua": "chrome_win_135", "referer": "referrer"},
+        "source_c": {"ip": "doc:3:111", "ua": "chrome_mac_135", "referer": "referrer"},
+        "source_d": {"ip": "doc:3:112", "ua": "chrome_133", "referer": "referrer"},
+        "source_e": {"ip": "doc:3:113", "ua": "chrome_120", "referer": "alt_referrer"}
+      },
+      "events": [
+        {"actor": "source_a", "at": 0, "path": "/synthetic/fanout-ref-edge?variant=0"},
+        {"actor": "source_b", "at": 1, "path": "/synthetic/fanout-ref-edge?variant=1"},
+        {"actor": "source_c", "at": 2, "path": "/synthetic/fanout-ref-edge?variant=2"},
+        {"actor": "source_d", "at": 3, "path": "/synthetic/fanout-ref-edge?variant=3"},
+        {"actor": "source_e", "at": 4, "path": "/synthetic/fanout-ref-edge?variant=4"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["*"],
+          "proofs": {"*": ["coordinated-target-fanout"]}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {
+              "actor": "source_e",
+              "action": "ban",
+              "reasons": ["coordinated-target-fanout"]
+            }
+          ],
+          "no_emissions": ["source_a", "source_b", "source_c", "source_d"]
+        }
+      }
+    },
+    {
+      "name": "same_second_ua_swap_payload_edge_fires",
+      "args": {
+        "detector_config": {"payload_marker_patterns": ["render=full"]},
+        "ua_switch_count": 3
+      },
+      "actors": {
+        "source": {"ip": "doc:3:114", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {
+          "actor": "source",
+          "at": 0,
+          "path": "/synthetic/payload-ua-swap?render=full&a=1",
+          "ua": "chrome_120"
+        },
+        {
+          "actor": "source",
+          "at": 0.4,
+          "path": "/synthetic/payload-ua-swap?render=full&a=2",
+          "ua": "firefox_122"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "proofs": {"source": ["same-second-ua-swap"]},
+          "absent_proofs": {"source": ["rapid-ua-switch", "payload-fuzzer"]}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {
+              "actor": "source",
+              "action": "ban",
+              "reasons": ["same-second-ua-swap"]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
