@@ -1,0 +1,206 @@
+{
+  "scenarios": [
+    {
+      "name": "human_archive_reading_stays_clean",
+      "actors": {
+        "reader": {"ip": "doc:1:90", "ua": "chrome_120", "referer": "referrer"}
+      },
+      "events": [
+        {
+          "actor": "reader",
+          "repeat": 8,
+          "at": 0,
+          "every": 35,
+          "path_template": "/synthetic/human-archive-post-{i:02d}"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["reader"],
+          "absent_proofs": {
+            "reader": [
+              "tight-multifetch",
+              "serial-sweep",
+              "cadenced-repeat",
+              "repeated-pair"
+            ]
+          }
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["reader"]
+        }
+      }
+    },
+    {
+      "name": "human_fast_tabs_below_multifetch_threshold_stays_clean",
+      "actors": {
+        "reader": {"ip": "doc:1:91", "ua": "chrome_120", "referer": "referrer"}
+      },
+      "events": [
+        {"actor": "reader", "at": 0, "path": "/synthetic/human-tab-a"},
+        {"actor": "reader", "at": 0.4, "path": "/synthetic/human-tab-b"},
+        {"actor": "reader", "at": 12, "path": "/synthetic/human-tab-c"}
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["reader"],
+          "absent_proofs": {"reader": ["tight-multifetch"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["reader"]
+        }
+      }
+    },
+    {
+      "name": "long_gap_device_change_stays_clean",
+      "actors": {
+        "reader": {"ip": "doc:1:92", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {"actor": "reader", "at": 0, "path": "/synthetic/device-change-a", "ua": "chrome_120"},
+        {"actor": "reader", "at": 600, "path": "/synthetic/device-change-b", "ua": "firefox_122"}
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["reader"],
+          "absent_proofs": {"reader": ["rapid-ua-switch", "rotating-ua"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["reader"]
+        }
+      }
+    },
+    {
+      "name": "paced_sweep_outside_window_stays_clean",
+      "actors": {
+        "reader": {"ip": "doc:1:93", "ua": "chrome_120", "referer": "referrer"}
+      },
+      "events": [
+        {
+          "actor": "reader",
+          "repeat": 10,
+          "at": 0,
+          "every": 5.2,
+          "path_template": "/synthetic/paced-window-page-{i:02d}"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["reader"],
+          "absent_proofs": {
+            "reader": [
+              "serial-sweep",
+              "tight-multifetch",
+              "repeated-pair"
+            ]
+          }
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["reader"]
+        }
+      }
+    },
+    {
+      "name": "cadenced_repeat_referrer_split_stays_clean",
+      "actors": {
+        "reader": {"ip": "doc:1:94", "ua": "chrome_133", "referer": "referrer"}
+      },
+      "events": [
+        {
+          "actor": "reader",
+          "at": 0,
+          "path": "/synthetic/cadence-referrer-split",
+          "referer": "referrer"
+        },
+        {
+          "actor": "reader",
+          "at": 3600,
+          "path": "/synthetic/cadence-referrer-split",
+          "referer": "alt_referrer"
+        },
+        {
+          "actor": "reader",
+          "at": 7200,
+          "path": "/synthetic/cadence-referrer-split",
+          "referer": "none"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["reader"],
+          "absent_proofs": {"reader": ["cadenced-repeat", "periodic-poller"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["reader"]
+        }
+      }
+    },
+    {
+      "name": "chrome_version_rotation_same_family_stays_clean",
+      "actors": {
+        "reader": {"ip": "doc:1:95", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {"actor": "reader", "at": 0, "path": "/synthetic/chrome-family-a", "ua": "chrome_120"},
+        {"actor": "reader", "at": 10, "path": "/synthetic/chrome-family-b", "ua": "chrome_133"},
+        {"actor": "reader", "at": 20, "path": "/synthetic/chrome-family-c", "ua": "chrome_win_134"},
+        {"actor": "reader", "at": 30, "path": "/synthetic/chrome-family-d", "ua": "chrome_win_135"},
+        {"actor": "reader", "at": 40, "path": "/synthetic/chrome-family-e", "ua": "chrome_mac_135"},
+        {
+          "actor": "reader",
+          "at": 50,
+          "path": "/synthetic/chrome-family-f",
+          "ua": "Mozilla/5.0 Chrome/136.0 Safari/537.36"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["reader"],
+          "absent_proofs": {"reader": ["rotating-ua", "rapid-ua-switch"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["reader"]
+        }
+      }
+    },
+    {
+      "name": "target_fanout_referer_split_stays_clean",
+      "args": {
+        "target_fanout_window_seconds": 60.0,
+        "target_fanout_count": 5,
+        "target_fanout_unique_ips": 5,
+        "target_fanout_dominant_referer_ratio": 0.8
+      },
+      "actors": {
+        "source_a": {"ip": "doc:1:96", "ua": "chrome_win_134", "referer": "referrer"},
+        "source_b": {"ip": "doc:1:97", "ua": "chrome_win_135", "referer": "referrer"},
+        "source_c": {"ip": "doc:1:98", "ua": "chrome_mac_135", "referer": "referrer"},
+        "source_d": {"ip": "doc:1:99", "ua": "chrome_133", "referer": "alt_referrer"},
+        "source_e": {"ip": "doc:2:99", "ua": "chrome_120", "referer": "alt_referrer"}
+      },
+      "events": [
+        {"actor": "source_a", "at": 0, "path": "/synthetic/fanout-ref-split?variant=0"},
+        {"actor": "source_b", "at": 1, "path": "/synthetic/fanout-ref-split?variant=1"},
+        {"actor": "source_c", "at": 2, "path": "/synthetic/fanout-ref-split?variant=2"},
+        {"actor": "source_d", "at": 3, "path": "/synthetic/fanout-ref-split?variant=3"},
+        {"actor": "source_e", "at": 4, "path": "/synthetic/fanout-ref-split?variant=4"}
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["*"],
+          "absent_proofs": {"*": ["coordinated-target-fanout"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["*"]
+        }
+      }
+    }
+  ]
+}

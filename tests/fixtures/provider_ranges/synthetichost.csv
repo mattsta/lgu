@@ -1,0 +1,2 @@
+cidr,provider,service,region
+192.0.2.0/24,synthetichost,compute,doc-region-1

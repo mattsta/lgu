@@ -1,0 +1,240 @@
+{
+  "required": [
+    {
+      "kind": "burst",
+      "args": ["window_seconds", "burst_count", "unique_paths"],
+      "boundaries": ["at"]
+    },
+    {
+      "kind": "head-burst",
+      "args": ["head_burst", "head_unique_paths"],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "paced-sweep",
+      "args": [
+        "sweep_window_seconds",
+        "sweep_count",
+        "sweep_unique_paths",
+        "sweep_dominant_referer_ratio"
+      ],
+      "boundaries": ["at"]
+    },
+    {
+      "kind": "fast-streak",
+      "args": ["streak_gap", "streak_count", "streak_unique_total"],
+      "boundaries": ["at"]
+    },
+    {
+      "kind": "repeated-pair",
+      "args": ["pair_repeat_count"],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "repeated-pair",
+      "args": ["pair_gap_seconds"],
+      "boundaries": ["at", "above"]
+    },
+    {
+      "kind": "tight-multifetch",
+      "args": [
+        "multi_fetch_window_seconds",
+        "multi_fetch_count",
+        "multi_fetch_unique_paths",
+        "multi_fetch_repeat_paths",
+        "multi_fetch_same_second_unique_paths",
+        "multi_fetch_dominant_referer_ratio"
+      ],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "asset-primed-probe",
+      "args": [
+        "exposure_probe_window_seconds",
+        "exposure_probe_asset_count",
+        "exposure_probe_count"
+      ],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "cadenced-repeat",
+      "args": [
+        "cadence_repeat_count",
+        "cadence_dominant_referer_ratio",
+        "cadence_hour_repeat_count",
+        "cadence_hour_gap_seconds",
+        "cadence_hour_gap_tolerance_seconds"
+      ],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "cadenced-repeat",
+      "args": ["cadence_min_gap_seconds"],
+      "boundaries": ["at", "above"]
+    },
+    {
+      "kind": "cadenced-repeat",
+      "args": ["cadence_gap_tolerance_seconds"],
+      "boundaries": ["at", "above"]
+    },
+    {
+      "kind": "redundant-revisit",
+      "args": [
+        "revisit_paths",
+        "revisit_repeat_requests",
+        "revisit_dominant_referer_ratio"
+      ],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "rotating-ua",
+      "args": ["rotate_ua_count", "rotate_ua_family_count"],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "periodic-poller",
+      "args": ["poll_repeat_count", "poll_min_gap_seconds"],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "serial-sweep",
+      "args": ["serial_min_gap_seconds", "serial_count", "serial_unique_paths"],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "serial-sweep",
+      "args": ["serial_max_gap_seconds"],
+      "boundaries": ["at", "above"]
+    },
+    {
+      "kind": "payload-fuzzer",
+      "args": [
+        "payload_show_analysis_count",
+        "payload_injection_count",
+        "payload_referer_junk_count",
+        "payload_mutation_count"
+      ],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "payload-fuzzer",
+      "args": ["payload_pair_gap_seconds"],
+      "boundaries": ["at", "above"]
+    },
+    {
+      "kind": "same-second-ua-swap",
+      "args": ["same_second_ua_swap_count"],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "rapid-ua-switch",
+      "args": [
+        "ua_switch_count",
+        "ua_switch_distinct_uas",
+        "ua_switch_distinct_families"
+      ],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "rapid-ua-switch",
+      "args": ["ua_switch_window_seconds"],
+      "boundaries": ["at", "above"]
+    },
+    {
+      "kind": "coordinated-ua",
+      "args": [
+        "coord_window_seconds",
+        "coord_count",
+        "coord_unique_paths",
+        "coord_unique_ips"
+      ],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "coordinated-ua",
+      "args": ["coord_max_ip_share"],
+      "boundaries": ["at", "above"]
+    },
+    {
+      "kind": "coordinated-target-fanout",
+      "args": ["target_fanout_window_seconds", "target_fanout_count"],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "coordinated-target-fanout",
+      "args": ["target_fanout_unique_ips"],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "coordinated-target-fanout",
+      "args": ["target_fanout_max_ip_share"],
+      "boundaries": ["at", "above"]
+    },
+    {
+      "kind": "coordinated-target-fanout",
+      "args": ["target_fanout_dominant_referer_ratio"],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "coordinated-target-fanout",
+      "args": [
+        "target_fanout_same_ua_window_seconds",
+        "target_fanout_same_ua_count",
+        "target_fanout_same_ua_unique_ips"
+      ],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "payload-campaign",
+      "args": [
+        "payload_campaign_window_seconds",
+        "payload_campaign_count",
+        "payload_campaign_unique_ips",
+        "payload_campaign_unique_paths"
+      ],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "provider-hosted-activity",
+      "args": ["provider_request_count", "provider_unique_paths"],
+      "boundaries": ["below", "at"]
+    },
+    {
+      "kind": "provider-hosted-activity",
+      "args": ["provider_min_score"],
+      "boundaries": ["at", "above"]
+    }
+  ],
+  "deferred": [
+    {
+      "kind": "known-ua-or-referer",
+      "args": ["known_bot_any_patterns", "known_bot_ua_patterns"],
+      "reason": "regex configuration is covered by scenario positives and synthetic hygiene, not numeric boundary sweeps"
+    },
+    {
+      "kind": "provider-hosted-activity",
+      "args": ["provider_ranges", "provider_watch"],
+      "reason": "provider data source presence and watch-list selection are integration configuration, not numeric threshold tuning"
+    },
+    {
+      "kind": "low-context-fanout",
+      "args": [
+        "low_context_fanout_window_seconds",
+        "low_context_fanout_count",
+        "low_context_fanout_unique_ips",
+        "low_context_fanout_max_ip_share",
+        "low_context_fanout_max_ip_requests",
+        "low_context_fanout_min_ua_family_ratio"
+      ],
+      "reason": "new long-window distributed-noise detector is covered by scenario positives and near misses while production thresholds settle"
+    },
+    {
+      "kind": "low-context-revisit",
+      "args": [
+        "low_context_revisit_count",
+        "low_context_revisit_min_span_seconds"
+      ],
+      "reason": "new same-IP low-context revisit detector is covered by scenario positives and near misses while production thresholds settle"
+    }
+  ]
+}

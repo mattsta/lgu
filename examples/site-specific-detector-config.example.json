@@ -1,0 +1,15 @@
+{
+  "known_bot_any_patterns": [
+    "syntheticcrawler",
+    "syntheticprobe",
+    "syntheticarchivefetcher",
+    "syntheticsitecopy"
+  ],
+  "known_bot_ua_patterns": [
+    "syntheticexternalfetch"
+  ],
+  "known_bot_referer_patterns": [],
+  "payload_marker_patterns": [
+    "(?:\\?|&)show_analysis=full(?:[&#]|$|[^A-Za-z0-9_])"
+  ]
+}

@@ -1,0 +1,661 @@
+{
+  "sweeps": [
+    {
+      "name": "coordinated_ua_proof_boundaries",
+      "base": {
+        "args": {
+          "coord_window_seconds": 10.0,
+          "coord_count": 5,
+          "coord_unique_paths": 5,
+          "coord_unique_ips": 3,
+          "coord_max_ip_share": 0.6,
+          "target_fanout_count": 100,
+          "payload_campaign_count": 100
+        },
+        "actors": {
+          "source_a": {"ip": "doc:1:180", "ua": "shared", "referer": "none"},
+          "source_b": {"ip": "doc:1:181", "ua": "shared", "referer": "none"},
+          "source_c": {"ip": "doc:1:182", "ua": "shared", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source_a", "at": 0, "path": "/synthetic/sweep-coord-ua-a"},
+          {"actor": "source_a", "at": 1, "path": "/synthetic/sweep-coord-ua-b"},
+          {"actor": "source_a", "at": 2, "path": "/synthetic/sweep-coord-ua-c"},
+          {"actor": "source_b", "at": 3, "path": "/synthetic/sweep-coord-ua-d"},
+          {"actor": "source_c", "at": 10, "path": "/synthetic/sweep-coord-ua-e"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["*"],
+            "proofs": {"*": ["coordinated-ua"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source_c", "action": "ban", "reasons": ["coordinated-ua"]}
+            ],
+            "no_emissions": ["source_a", "source_b"]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "window_one_tenth_second_short_stays_clean",
+          "covers": [
+            {"kind": "coordinated-ua", "args": ["coord_window_seconds"], "boundary": "below"}
+          ],
+          "set": {
+            "args.coord_window_seconds": 9.9,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["coordinated-ua"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "at_window_threshold_fires",
+          "covers": [
+            {"kind": "coordinated-ua", "args": ["coord_window_seconds"], "boundary": "at"}
+          ],
+          "set": {
+            "args.coord_window_seconds": 10.0
+          }
+        },
+        {
+          "name": "one_request_short_stays_clean",
+          "covers": [
+            {"kind": "coordinated-ua", "args": ["coord_count"], "boundary": "below"}
+          ],
+          "set": {
+            "args.coord_count": 6,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["coordinated-ua"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "at_request_count_threshold_fires",
+          "covers": [
+            {"kind": "coordinated-ua", "args": ["coord_count"], "boundary": "at"}
+          ],
+          "set": {
+            "args.coord_count": 5
+          }
+        },
+        {
+          "name": "one_unique_path_short_stays_clean",
+          "covers": [
+            {"kind": "coordinated-ua", "args": ["coord_unique_paths"], "boundary": "below"}
+          ],
+          "set": {
+            "events.4.path": "/synthetic/sweep-coord-ua-a",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["coordinated-ua"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "at_unique_path_threshold_fires",
+          "covers": [
+            {"kind": "coordinated-ua", "args": ["coord_unique_paths"], "boundary": "at"}
+          ],
+          "set": {
+            "events.4.path": "/synthetic/sweep-coord-ua-e"
+          }
+        },
+        {
+          "name": "one_unique_ip_short_stays_clean",
+          "covers": [
+            {"kind": "coordinated-ua", "args": ["coord_unique_ips"], "boundary": "below"}
+          ],
+          "set": {
+            "events.4.actor": "source_b",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["coordinated-ua"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "at_unique_ip_threshold_fires",
+          "covers": [
+            {"kind": "coordinated-ua", "args": ["coord_unique_ips"], "boundary": "at"}
+          ],
+          "set": {
+            "events.4.actor": "source_c"
+          }
+        },
+        {
+          "name": "at_max_ip_share_threshold_fires",
+          "covers": [
+            {"kind": "coordinated-ua", "args": ["coord_max_ip_share"], "boundary": "at"}
+          ],
+          "set": {
+            "args.coord_max_ip_share": 0.6
+          }
+        },
+        {
+          "name": "above_max_ip_share_threshold_stays_clean",
+          "covers": [
+            {"kind": "coordinated-ua", "args": ["coord_max_ip_share"], "boundary": "above"}
+          ],
+          "set": {
+            "args.coord_max_ip_share": 0.59,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["coordinated-ua"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "target_fanout_proof_boundaries",
+      "base": {
+        "args": {
+          "coord_count": 100,
+          "target_fanout_window_seconds": 10.0,
+          "target_fanout_count": 5,
+          "target_fanout_unique_ips": 3,
+          "target_fanout_max_ip_share": 0.6,
+          "target_fanout_dominant_referer_ratio": 0.8,
+          "payload_campaign_count": 100
+        },
+        "actors": {
+          "source_a": {"ip": "doc:1:183", "ua": "chrome_win_134", "referer": "referrer"},
+          "source_b": {"ip": "doc:1:184", "ua": "chrome_win_135", "referer": "referrer"},
+          "source_c": {"ip": "doc:1:185", "ua": "chrome_mac_135", "referer": "alt_referrer"}
+        },
+        "events": [
+          {"actor": "source_a", "at": 0, "path": "/synthetic/sweep-target-fanout?variant=0"},
+          {"actor": "source_a", "at": 1, "path": "/synthetic/sweep-target-fanout?variant=1"},
+          {"actor": "source_a", "at": 2, "path": "/synthetic/sweep-target-fanout?variant=2"},
+          {"actor": "source_b", "at": 3, "path": "/synthetic/sweep-target-fanout?variant=3"},
+          {"actor": "source_c", "at": 10, "path": "/synthetic/sweep-target-fanout?variant=4"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["*"],
+            "proofs": {"*": ["coordinated-target-fanout"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {
+                "actor": "source_c",
+                "action": "ban",
+                "reasons": ["coordinated-target-fanout"]
+              }
+            ],
+            "no_emissions": ["source_a", "source_b"]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "window_one_tenth_second_short_stays_clean",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_window_seconds"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.target_fanout_window_seconds": 9.9,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["coordinated-target-fanout"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "at_window_threshold_fires",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_window_seconds"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.target_fanout_window_seconds": 10.0
+          }
+        },
+        {
+          "name": "one_request_short_stays_clean",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_count"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.target_fanout_count": 6,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["coordinated-target-fanout"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "at_request_count_threshold_fires",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_count"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.target_fanout_count": 5
+          }
+        },
+        {
+          "name": "at_max_ip_share_threshold_fires",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_max_ip_share"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.target_fanout_max_ip_share": 0.6
+          }
+        },
+        {
+          "name": "above_max_ip_share_threshold_stays_clean",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_max_ip_share"],
+              "boundary": "above"
+            }
+          ],
+          "set": {
+            "args.target_fanout_max_ip_share": 0.59,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["coordinated-target-fanout"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "at_referer_dominance_threshold_fires",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_dominant_referer_ratio"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.target_fanout_dominant_referer_ratio": 0.8
+          }
+        },
+        {
+          "name": "below_referer_dominance_threshold_stays_clean",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_dominant_referer_ratio"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.target_fanout_dominant_referer_ratio": 0.81,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["coordinated-target-fanout"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "same_ua_target_fanout_proof_boundaries",
+      "base": {
+        "args": {
+          "coord_count": 100,
+          "target_fanout_count": 100,
+          "target_fanout_same_ua_window_seconds": 5.0,
+          "target_fanout_same_ua_count": 3,
+          "target_fanout_same_ua_unique_ips": 3,
+          "payload_campaign_count": 100
+        },
+        "actors": {
+          "source_a": {"ip": "doc:1:210", "ua": "shared", "referer": "none"},
+          "source_b": {"ip": "doc:1:211", "ua": "shared", "referer": "none"},
+          "source_c": {"ip": "doc:1:212", "ua": "shared", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source_a", "at": 0, "path": "/synthetic/sweep-exact-ua-target"},
+          {"actor": "source_b", "at": 1, "path": "/synthetic/sweep-exact-ua-target"},
+          {"actor": "source_c", "at": 5, "path": "/synthetic/sweep-exact-ua-target"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["*"],
+            "proofs": {"*": ["coordinated-target-fanout"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {
+                "actor": "source_c",
+                "action": "ban",
+                "reasons": ["coordinated-target-fanout"]
+              }
+            ],
+            "no_emissions": ["source_a", "source_b"]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "same_ua_window_short_stays_clean",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_same_ua_window_seconds"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.target_fanout_same_ua_window_seconds": 4.9,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["coordinated-target-fanout"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "same_ua_at_window_threshold_fires",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_same_ua_window_seconds"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.target_fanout_same_ua_window_seconds": 5.0
+          }
+        },
+        {
+          "name": "same_ua_one_request_short_stays_clean",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_same_ua_count"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.target_fanout_same_ua_count": 4,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["coordinated-target-fanout"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "same_ua_at_request_count_threshold_fires",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_same_ua_count"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.target_fanout_same_ua_count": 3
+          }
+        },
+        {
+          "name": "same_ua_one_ip_short_stays_clean",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_same_ua_unique_ips"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.target_fanout_same_ua_unique_ips": 4,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["coordinated-target-fanout"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "same_ua_at_unique_ip_threshold_fires",
+          "covers": [
+            {
+              "kind": "coordinated-target-fanout",
+              "args": ["target_fanout_same_ua_unique_ips"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.target_fanout_same_ua_unique_ips": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "payload_campaign_proof_boundaries",
+      "base": {
+        "args": {
+          "detector_config": {"payload_marker_patterns": ["render=full"]},
+          "coord_count": 100,
+          "target_fanout_count": 100,
+          "payload_campaign_window_seconds": 10.0,
+          "payload_campaign_count": 5,
+          "payload_campaign_unique_ips": 3,
+          "payload_campaign_unique_paths": 5
+        },
+        "actors": {
+          "source_a": {"ip": "doc:1:186", "ua": "chrome_120", "referer": "none"},
+          "source_b": {"ip": "doc:1:187", "ua": "chrome_120", "referer": "none"},
+          "source_c": {"ip": "doc:1:188", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source_a", "at": 0, "path": "/synthetic/sweep-payload-a?render=full"},
+          {"actor": "source_a", "at": 1, "path": "/synthetic/sweep-payload-b?render=full"},
+          {"actor": "source_a", "at": 2, "path": "/synthetic/sweep-payload-c?render=full"},
+          {"actor": "source_b", "at": 3, "path": "/synthetic/sweep-payload-d?render=full"},
+          {"actor": "source_c", "at": 10, "path": "/synthetic/sweep-payload-e?render=full"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["*"],
+            "proofs": {"*": ["payload-campaign"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source_c", "action": "ban", "reasons": ["payload-campaign"]}
+            ],
+            "no_emissions": ["source_a", "source_b"]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "window_one_tenth_second_short_stays_clean",
+          "covers": [
+            {
+              "kind": "payload-campaign",
+              "args": ["payload_campaign_window_seconds"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.payload_campaign_window_seconds": 9.9,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["payload-campaign"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "at_window_threshold_fires",
+          "covers": [
+            {
+              "kind": "payload-campaign",
+              "args": ["payload_campaign_window_seconds"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.payload_campaign_window_seconds": 10.0
+          }
+        },
+        {
+          "name": "one_request_short_stays_clean",
+          "covers": [
+            {
+              "kind": "payload-campaign",
+              "args": ["payload_campaign_count"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "args.payload_campaign_count": 6,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["payload-campaign"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "at_request_count_threshold_fires",
+          "covers": [
+            {
+              "kind": "payload-campaign",
+              "args": ["payload_campaign_count"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.payload_campaign_count": 5
+          }
+        },
+        {
+          "name": "one_unique_ip_short_stays_clean",
+          "covers": [
+            {
+              "kind": "payload-campaign",
+              "args": ["payload_campaign_unique_ips"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "events.4.actor": "source_b",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["payload-campaign"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "at_unique_ip_threshold_fires",
+          "covers": [
+            {
+              "kind": "payload-campaign",
+              "args": ["payload_campaign_unique_ips"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "events.4.actor": "source_c"
+          }
+        },
+        {
+          "name": "one_unique_path_short_stays_clean",
+          "covers": [
+            {
+              "kind": "payload-campaign",
+              "args": ["payload_campaign_unique_paths"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "events.4.path": "/synthetic/sweep-payload-a?render=full&copy=1",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["*"],
+            "expect.batch.absent_proofs": {"*": ["payload-campaign"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["*"]
+          }
+        },
+        {
+          "name": "at_unique_path_threshold_fires",
+          "covers": [
+            {
+              "kind": "payload-campaign",
+              "args": ["payload_campaign_unique_paths"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "events.4.path": "/synthetic/sweep-payload-e?render=full"
+          }
+        }
+      ]
+    }
+  ]
+}

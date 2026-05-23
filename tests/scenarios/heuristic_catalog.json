@@ -1,0 +1,278 @@
+{
+  "scenarios": [
+    {
+      "name": "known_ua_pattern_fires",
+      "args": {
+        "detector_config": {
+          "known_bot_ua_patterns": ["SyntheticKnownBot"]
+        }
+      },
+      "actors": {
+        "source": {"ip": "doc:1:201", "ua": "SyntheticKnownBot/1.0", "referer": "none"},
+        "clean": {"ip": "doc:1:202", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {"actor": "source", "at": 0, "path": "/synthetic/known-ua-pattern"},
+        {"actor": "clean", "at": 10, "path": "/synthetic/known-ua-clean"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "clean": ["clean"],
+          "reasons": {"source": ["known-ua-or-referer"]},
+          "absent_reasons": {"clean": ["known-ua-or-referer"]},
+          "actions": {"source": "ban", "clean": "clean"}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "ban", "reasons": ["known-ua-or-referer"]}
+          ],
+          "no_emissions": ["clean"]
+        }
+      }
+    },
+    {
+      "name": "burst_threshold_fires_without_proofs",
+      "args": {
+        "multi_fetch_count": 100,
+        "sweep_count": 100,
+        "serial_count": 100,
+        "ban_score": 999,
+        "suspect_score": 999,
+        "emit_suspects": true
+      },
+      "actors": {
+        "source": {"ip": "doc:1:203", "ua": "chrome_120", "referer": "none"},
+        "clean": {"ip": "doc:1:204", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {
+          "actor": "source",
+          "repeat": 12,
+          "every": 0.1,
+          "path_template": "/synthetic/burst-positive-{i:02d}"
+        },
+        {
+          "actor": "clean",
+          "at": 20,
+          "repeat": 11,
+          "every": 0.1,
+          "path_template": "/synthetic/burst-negative-{i:02d}"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "clean": ["clean"],
+          "reasons": {"source": ["burst"]},
+          "absent_reasons": {"clean": ["burst"]},
+          "actions": {"source": "suspect", "clean": "clean"}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "suspect", "reasons": ["burst"]}
+          ],
+          "no_emissions": ["clean"]
+        }
+      }
+    },
+    {
+      "name": "head_burst_threshold_fires_without_proofs",
+      "args": {
+        "multi_fetch_count": 100,
+        "sweep_count": 100,
+        "serial_count": 100,
+        "ban_score": 999,
+        "suspect_score": 999,
+        "emit_suspects": true
+      },
+      "actors": {
+        "source": {
+          "ip": "doc:1:205",
+          "ua": "chrome_120",
+          "referer": "none",
+          "method": "HEAD"
+        },
+        "clean": {
+          "ip": "doc:1:206",
+          "ua": "chrome_120",
+          "referer": "none",
+          "method": "HEAD"
+        }
+      },
+      "events": [
+        {
+          "actor": "source",
+          "repeat": 6,
+          "every": 0.1,
+          "path_template": "/synthetic/head-positive-{i:02d}"
+        },
+        {
+          "actor": "clean",
+          "at": 20,
+          "repeat": 5,
+          "every": 0.1,
+          "path_template": "/synthetic/head-negative-{i:02d}"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "clean": ["clean"],
+          "reasons": {"source": ["head-burst"]},
+          "absent_reasons": {"clean": ["head-burst"]},
+          "actions": {"source": "suspect", "clean": "clean"}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "suspect", "reasons": ["head-burst"]}
+          ],
+          "no_emissions": ["clean"]
+        }
+      }
+    },
+    {
+      "name": "paced_sweep_threshold_fires_without_serial_proof",
+      "args": {
+        "serial_count": 100,
+        "ban_score": 999,
+        "suspect_score": 999,
+        "emit_suspects": true
+      },
+      "actors": {
+        "source": {"ip": "doc:1:207", "ua": "chrome_120", "referer": "referrer"},
+        "clean": {"ip": "doc:1:208", "ua": "chrome_120", "referer": "referrer"}
+      },
+      "events": [
+        {
+          "actor": "source",
+          "repeat": 10,
+          "every": 4,
+          "path_template": "/synthetic/paced-positive-{i:02d}"
+        },
+        {
+          "actor": "clean",
+          "at": 100,
+          "repeat": 9,
+          "every": 4,
+          "path_template": "/synthetic/paced-negative-{i:02d}"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "clean": ["clean"],
+          "reasons": {"source": ["paced-sweep"]},
+          "absent_reasons": {"clean": ["paced-sweep"]},
+          "actions": {"source": "suspect", "clean": "clean"}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "suspect", "reasons": ["paced-sweep"]}
+          ],
+          "no_emissions": ["clean"]
+        }
+      }
+    },
+    {
+      "name": "fast_streak_threshold_fires_without_proofs",
+      "args": {
+        "multi_fetch_count": 100,
+        "sweep_count": 100,
+        "serial_count": 100,
+        "ban_score": 999,
+        "suspect_score": 999,
+        "emit_suspects": true
+      },
+      "actors": {
+        "source": {"ip": "doc:1:209", "ua": "chrome_120", "referer": "none"},
+        "clean": {"ip": "doc:1:210", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {
+          "actor": "source",
+          "repeat": 20,
+          "every": 0.5,
+          "path_template": "/synthetic/fast-positive-{i:02d}"
+        },
+        {
+          "actor": "clean",
+          "at": 100,
+          "repeat": 19,
+          "every": 0.5,
+          "path_template": "/synthetic/fast-negative-{i:02d}"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "clean": ["clean"],
+          "reasons": {"source": ["fast-streak"]},
+          "absent_reasons": {"clean": ["fast-streak"]},
+          "actions": {"source": "suspect", "clean": "clean"}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "suspect", "reasons": ["fast-streak"]}
+          ],
+          "no_emissions": ["clean"]
+        }
+      }
+    },
+    {
+      "name": "provider_hosted_activity_opt_in_fires",
+      "args": {
+        "provider_ranges": ["tests/fixtures/provider_ranges/synthetichost.csv"],
+        "provider_watch": ["synthetichost"],
+        "provider_request_count": 3,
+        "provider_unique_paths": 3,
+        "provider_min_score": 0.0,
+        "emit_suspects": true
+      },
+      "actors": {
+        "source": {"ip": "doc:1:211", "ua": "chrome_120", "referer": "none"},
+        "clean": {"ip": "doc:2:211", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {
+          "actor": "source",
+          "repeat": 3,
+          "every": 1,
+          "path_template": "/synthetic/provider-positive-{i:02d}"
+        },
+        {
+          "actor": "clean",
+          "at": 20,
+          "repeat": 3,
+          "every": 1,
+          "path_template": "/synthetic/provider-negative-{i:02d}"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "clean": ["clean"],
+          "proofs": {"source": ["provider-hosted-activity"]},
+          "absent_proofs": {"clean": ["provider-hosted-activity"]},
+          "actions": {"source": "suspect", "clean": "clean"}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {
+              "actor": "source",
+              "action": "suspect",
+              "reasons": ["provider-hosted-activity"]
+            }
+          ],
+          "no_emissions": ["clean"]
+        }
+      }
+    }
+  ]
+}
