@@ -1,0 +1,678 @@
+{
+  "sweeps": [
+    {
+      "name": "redundant_revisit_path_count_boundary",
+      "base": {
+        "actors": {
+          "source": {"ip": "doc:1:180", "ua": "chrome_120", "referer": "referrer"}
+        },
+        "events": [
+          {
+            "actor": "source",
+            "repeat": 3,
+            "every": 200,
+            "events": [
+              {"offset": 0, "path": "/synthetic/sweep-revisit-path-a"},
+              {"offset": 40, "path": "/synthetic/sweep-revisit-path-b"},
+              {"offset": 80, "path": "/synthetic/sweep-revisit-path-c"},
+              {"offset": 120, "path": "/synthetic/sweep-revisit-path-d"},
+              {"offset": 160, "path": "/synthetic/sweep-revisit-path-e"}
+            ]
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["redundant-revisit"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["redundant-revisit"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_revisited_path_short_stays_clean",
+          "covers": [
+            {"kind": "redundant-revisit", "args": ["revisit_paths"], "boundary": "below"}
+          ],
+          "set": {
+            "events.0.events.4.path": "/synthetic/sweep-revisit-path-a",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["redundant-revisit"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_revisited_path_threshold_fires",
+          "covers": [
+            {"kind": "redundant-revisit", "args": ["revisit_paths"], "boundary": "at"}
+          ],
+          "set": {
+            "events.0.events.4.path": "/synthetic/sweep-revisit-path-e"
+          }
+        }
+      ]
+    },
+    {
+      "name": "redundant_revisit_repeat_request_boundary",
+      "base": {
+        "actors": {
+          "source": {"ip": "doc:1:181", "ua": "chrome_120", "referer": "referrer"}
+        },
+        "events": [
+          {
+            "actor": "source",
+            "repeat": 3,
+            "every": 200,
+            "events": [
+              {"offset": 0, "path": "/synthetic/sweep-revisit-repeat-a"},
+              {"offset": 40, "path": "/synthetic/sweep-revisit-repeat-b"},
+              {"offset": 80, "path": "/synthetic/sweep-revisit-repeat-c"},
+              {"offset": 120, "path": "/synthetic/sweep-revisit-repeat-d"},
+              {"offset": 160, "path": "/synthetic/sweep-revisit-repeat-e"}
+            ]
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["redundant-revisit"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["redundant-revisit"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_repeat_request_short_stays_clean",
+          "covers": [
+            {"kind": "redundant-revisit", "args": ["revisit_repeat_requests"], "boundary": "below"}
+          ],
+          "set": {
+            "events.0.repeat": 2,
+            "events.0.events.4.offset": 560,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["redundant-revisit"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_repeat_request_threshold_fires",
+          "covers": [
+            {"kind": "redundant-revisit", "args": ["revisit_repeat_requests"], "boundary": "at"}
+          ],
+          "set": {
+            "events.0.repeat": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "redundant_revisit_referer_ratio_boundary",
+      "base": {
+        "args": {"revisit_dominant_referer_ratio": 0.8},
+        "actors": {
+          "source": {"ip": "doc:1:182", "ua": "chrome_120", "referer": "referrer"}
+        },
+        "events": [
+          {
+            "actor": "source",
+            "repeat": 3,
+            "every": 200,
+            "events": [
+              {"offset": 0, "path": "/synthetic/sweep-revisit-ratio-a", "referer": "alt_referrer"},
+              {"offset": 40, "path": "/synthetic/sweep-revisit-ratio-b"},
+              {"offset": 80, "path": "/synthetic/sweep-revisit-ratio-c"},
+              {"offset": 120, "path": "/synthetic/sweep-revisit-ratio-d"},
+              {"offset": 160, "path": "/synthetic/sweep-revisit-ratio-e"}
+            ]
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["redundant-revisit"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["redundant-revisit"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "below_referer_ratio_stays_clean",
+          "covers": [
+            {"kind": "redundant-revisit", "args": ["revisit_dominant_referer_ratio"], "boundary": "below"}
+          ],
+          "set": {
+            "events.0.events.1.referer": "alt_referrer",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["redundant-revisit"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_referer_ratio_threshold_fires",
+          "covers": [
+            {"kind": "redundant-revisit", "args": ["revisit_dominant_referer_ratio"], "boundary": "at"}
+          ],
+          "set": {
+            "events.0.events.1.referer": "referrer"
+          }
+        }
+      ]
+    },
+    {
+      "name": "rotating_ua_count_boundary",
+      "base": {
+        "args": {"emit_suspects": true},
+        "actors": {
+          "source": {"ip": "doc:1:183", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-rotate-count-a", "ua": "chrome_120"},
+          {"actor": "source", "at": 3, "path": "/synthetic/sweep-rotate-count-b", "ua": "firefox_122"},
+          {"actor": "source", "at": 6, "path": "/synthetic/sweep-rotate-count-c", "ua": "safari_17"},
+          {"actor": "source", "at": 9, "path": "/synthetic/sweep-rotate-count-d", "ua": "SyntheticRotatorA/1.0"},
+          {"actor": "source", "at": 12, "path": "/synthetic/sweep-rotate-count-e", "ua": "SyntheticRotatorB/1.0"},
+          {"actor": "source", "at": 15, "path": "/synthetic/sweep-rotate-count-f", "ua": "SyntheticRotatorC/1.0"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["rotating-ua"]},
+            "actions": {"source": "suspect"}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "suspect", "reasons": ["rotating-ua"]}
+            ],
+            "forbidden_actions": {"source": ["ban"]}
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_raw_ua_short_stays_clean",
+          "covers": [
+            {"kind": "rotating-ua", "args": ["rotate_ua_count"], "boundary": "below"}
+          ],
+          "set": {
+            "events.5.ua": "SyntheticRotatorB/1.0",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["rotating-ua"]},
+            "expect.batch.actions": {"source": "clean"},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_raw_ua_threshold_suspects",
+          "covers": [
+            {"kind": "rotating-ua", "args": ["rotate_ua_count"], "boundary": "at"}
+          ],
+          "set": {
+            "events.5.ua": "SyntheticRotatorC/1.0"
+          }
+        }
+      ]
+    },
+    {
+      "name": "rotating_ua_family_boundary",
+      "base": {
+        "args": {"emit_suspects": true},
+        "actors": {
+          "source": {"ip": "doc:1:184", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-rotate-family-a", "ua": "chrome_120"},
+          {"actor": "source", "at": 3, "path": "/synthetic/sweep-rotate-family-b", "ua": "chrome_133"},
+          {"actor": "source", "at": 6, "path": "/synthetic/sweep-rotate-family-c", "ua": "firefox_122"},
+          {"actor": "source", "at": 9, "path": "/synthetic/sweep-rotate-family-d", "ua": "firefox_150"},
+          {"actor": "source", "at": 12, "path": "/synthetic/sweep-rotate-family-e", "ua": "safari_17"},
+          {"actor": "source", "at": 15, "path": "/synthetic/sweep-rotate-family-f", "ua": "SyntheticRotatorFamilyA/1.0"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["rotating-ua"]},
+            "actions": {"source": "suspect"}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "suspect", "reasons": ["rotating-ua"]}
+            ],
+            "forbidden_actions": {"source": ["ban"]}
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_family_short_stays_clean",
+          "covers": [
+            {"kind": "rotating-ua", "args": ["rotate_ua_family_count"], "boundary": "below"}
+          ],
+          "set": {
+            "events.5.ua": "Mozilla/5.0 Version/16.0 Safari/605.1.15",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["rotating-ua"]},
+            "expect.batch.actions": {"source": "clean"},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_family_threshold_suspects",
+          "covers": [
+            {"kind": "rotating-ua", "args": ["rotate_ua_family_count"], "boundary": "at"}
+          ],
+          "set": {
+            "events.5.ua": "SyntheticRotatorFamilyA/1.0"
+          }
+        }
+      ]
+    },
+    {
+      "name": "periodic_poller_repeat_count_boundary",
+      "base": {
+        "args": {"cadence_repeat_count": 99},
+        "actors": {
+          "source": {"ip": "doc:1:185", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {
+            "actor": "source",
+            "repeat": 6,
+            "every": 3000,
+            "path": "/synthetic/sweep-periodic-repeat-target"
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["periodic-poller"]},
+            "absent_proofs": {"source": ["cadenced-repeat"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["periodic-poller"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_repeat_short_stays_clean",
+          "covers": [
+            {"kind": "periodic-poller", "args": ["poll_repeat_count"], "boundary": "below"}
+          ],
+          "set": {
+            "events.0.repeat": 5,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["periodic-poller", "cadenced-repeat"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_repeat_threshold_fires",
+          "covers": [
+            {"kind": "periodic-poller", "args": ["poll_repeat_count"], "boundary": "at"}
+          ],
+          "set": {
+            "events.0.repeat": 6
+          }
+        }
+      ]
+    },
+    {
+      "name": "periodic_poller_min_gap_boundary",
+      "base": {
+        "args": {"cadence_repeat_count": 99},
+        "actors": {
+          "source": {"ip": "doc:1:186", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {
+            "actor": "source",
+            "repeat": 6,
+            "every": 3000,
+            "path": "/synthetic/sweep-periodic-gap-target"
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["periodic-poller"]},
+            "absent_proofs": {"source": ["cadenced-repeat"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["periodic-poller"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "below_min_gap_stays_clean",
+          "covers": [
+            {"kind": "periodic-poller", "args": ["poll_min_gap_seconds"], "boundary": "below"}
+          ],
+          "set": {
+            "events.0.every": 2999,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["periodic-poller", "cadenced-repeat"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_min_gap_threshold_fires",
+          "covers": [
+            {"kind": "periodic-poller", "args": ["poll_min_gap_seconds"], "boundary": "at"}
+          ],
+          "set": {
+            "events.0.every": 3000
+          }
+        }
+      ]
+    },
+    {
+      "name": "serial_sweep_count_boundary",
+      "base": {
+        "args": {
+          "burst_count": 100,
+          "sweep_count": 100,
+          "multi_fetch_count": 100,
+          "serial_min_gap_seconds": 1.0,
+          "ban_score": 999,
+          "suspect_score": 999
+        },
+        "actors": {
+          "source": {"ip": "doc:1:187", "ua": "chrome_120", "referer": "referrer"}
+        },
+        "events": [
+          {
+            "actor": "source",
+            "repeat": 12,
+            "every": 1,
+            "path_template": "/synthetic/sweep-serial-count-{i:02d}"
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["serial-sweep"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["serial-sweep"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_request_short_stays_clean",
+          "covers": [
+            {"kind": "serial-sweep", "args": ["serial_count"], "boundary": "below"}
+          ],
+          "set": {
+            "events.0.repeat": 11,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["serial-sweep"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_request_count_threshold_fires",
+          "covers": [
+            {"kind": "serial-sweep", "args": ["serial_count"], "boundary": "at"}
+          ],
+          "set": {
+            "events.0.repeat": 12
+          }
+        }
+      ]
+    },
+    {
+      "name": "serial_sweep_unique_path_boundary",
+      "base": {
+        "args": {
+          "burst_count": 100,
+          "sweep_count": 100,
+          "multi_fetch_count": 100,
+          "serial_min_gap_seconds": 1.0,
+          "ban_score": 999,
+          "suspect_score": 999
+        },
+        "actors": {
+          "source": {"ip": "doc:1:188", "ua": "chrome_120", "referer": "referrer"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-serial-unique-a"},
+          {"actor": "source", "at": 1, "path": "/synthetic/sweep-serial-unique-b"},
+          {"actor": "source", "at": 2, "path": "/synthetic/sweep-serial-unique-c"},
+          {"actor": "source", "at": 3, "path": "/synthetic/sweep-serial-unique-d"},
+          {"actor": "source", "at": 4, "path": "/synthetic/sweep-serial-unique-e"},
+          {"actor": "source", "at": 5, "path": "/synthetic/sweep-serial-unique-f"},
+          {"actor": "source", "at": 6, "path": "/synthetic/sweep-serial-unique-g"},
+          {"actor": "source", "at": 7, "path": "/synthetic/sweep-serial-unique-h"},
+          {"actor": "source", "at": 8, "path": "/synthetic/sweep-serial-unique-i"},
+          {"actor": "source", "at": 9, "path": "/synthetic/sweep-serial-unique-j"},
+          {"actor": "source", "at": 10, "path": "/synthetic/sweep-serial-unique-a"},
+          {"actor": "source", "at": 11, "path": "/synthetic/sweep-serial-unique-b"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["serial-sweep"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["serial-sweep"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_unique_path_short_stays_clean",
+          "covers": [
+            {"kind": "serial-sweep", "args": ["serial_unique_paths"], "boundary": "below"}
+          ],
+          "set": {
+            "events.9.path": "/synthetic/sweep-serial-unique-i",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["serial-sweep"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_unique_path_threshold_fires",
+          "covers": [
+            {"kind": "serial-sweep", "args": ["serial_unique_paths"], "boundary": "at"}
+          ],
+          "set": {
+            "events.9.path": "/synthetic/sweep-serial-unique-j"
+          }
+        }
+      ]
+    },
+    {
+      "name": "serial_sweep_min_gap_boundary",
+      "base": {
+        "args": {
+          "burst_count": 100,
+          "sweep_count": 100,
+          "multi_fetch_count": 100,
+          "serial_min_gap_seconds": 1.0,
+          "ban_score": 999,
+          "suspect_score": 999
+        },
+        "actors": {
+          "source": {"ip": "doc:1:189", "ua": "chrome_120", "referer": "referrer"}
+        },
+        "events": [
+          {
+            "actor": "source",
+            "repeat": 12,
+            "every": 1.0,
+            "path_template": "/synthetic/sweep-serial-min-gap-{i:02d}"
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["serial-sweep"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["serial-sweep"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "below_min_gap_stays_clean",
+          "covers": [
+            {"kind": "serial-sweep", "args": ["serial_min_gap_seconds"], "boundary": "below"}
+          ],
+          "set": {
+            "events.0.every": 0.99,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["serial-sweep"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_min_gap_threshold_fires",
+          "covers": [
+            {"kind": "serial-sweep", "args": ["serial_min_gap_seconds"], "boundary": "at"}
+          ],
+          "set": {
+            "events.0.every": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "name": "serial_sweep_max_gap_boundary",
+      "base": {
+        "args": {
+          "burst_count": 100,
+          "sweep_count": 100,
+          "multi_fetch_count": 100,
+          "ban_score": 999,
+          "suspect_score": 999
+        },
+        "actors": {
+          "source": {"ip": "doc:1:190", "ua": "chrome_120", "referer": "referrer"}
+        },
+        "events": [
+          {
+            "actor": "source",
+            "repeat": 12,
+            "every": 3.5,
+            "path_template": "/synthetic/sweep-serial-max-gap-{i:02d}"
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["serial-sweep"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["serial-sweep"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "at_max_gap_threshold_fires",
+          "covers": [
+            {"kind": "serial-sweep", "args": ["serial_max_gap_seconds"], "boundary": "at"}
+          ],
+          "set": {
+            "events.0.every": 3.5
+          }
+        },
+        {
+          "name": "above_max_gap_stays_clean",
+          "covers": [
+            {"kind": "serial-sweep", "args": ["serial_max_gap_seconds"], "boundary": "above"}
+          ],
+          "set": {
+            "events.0.every": 3.51,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["serial-sweep"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        }
+      ]
+    }
+  ]
+}

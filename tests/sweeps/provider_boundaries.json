@@ -1,0 +1,229 @@
+{
+  "sweeps": [
+    {
+      "name": "provider_request_count_boundary",
+      "base": {
+        "args": {
+          "provider_ranges": ["tests/fixtures/provider_ranges/synthetichost.csv"],
+          "provider_watch": ["synthetichost"],
+          "provider_request_count": 3,
+          "provider_unique_paths": 3,
+          "provider_min_score": 0.0,
+          "emit_suspects": true
+        },
+        "actors": {
+          "source": {"ip": "doc:1:161", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {
+            "actor": "source",
+            "repeat": 3,
+            "every": 1,
+            "path_template": "/synthetic/sweep-provider-count-{i:02d}"
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["provider-hosted-activity"]},
+            "actions": {"source": "suspect"}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {
+                "actor": "source",
+                "action": "suspect",
+                "reasons": ["provider-hosted-activity"]
+              }
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_below_stays_clean",
+          "covers": [
+            {
+              "kind": "provider-hosted-activity",
+              "args": ["provider_request_count"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "events.0.repeat": 2,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["provider-hosted-activity"]},
+            "expect.batch.actions": {"source": "clean"},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_threshold_fires",
+          "covers": [
+            {
+              "kind": "provider-hosted-activity",
+              "args": ["provider_request_count"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "events.0.repeat": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "provider_unique_paths_boundary",
+      "base": {
+        "args": {
+          "provider_ranges": ["tests/fixtures/provider_ranges/synthetichost.csv"],
+          "provider_watch": ["synthetichost"],
+          "provider_request_count": 3,
+          "provider_unique_paths": 3,
+          "provider_min_score": 0.0,
+          "emit_suspects": true
+        },
+        "actors": {
+          "source": {"ip": "doc:1:162", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-provider-unique-a"},
+          {"actor": "source", "at": 1, "path": "/synthetic/sweep-provider-unique-b"},
+          {"actor": "source", "at": 2, "path": "/synthetic/sweep-provider-unique-c"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["provider-hosted-activity"]},
+            "actions": {"source": "suspect"}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {
+                "actor": "source",
+                "action": "suspect",
+                "reasons": ["provider-hosted-activity"]
+              }
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_unique_path_short_stays_clean",
+          "covers": [
+            {
+              "kind": "provider-hosted-activity",
+              "args": ["provider_unique_paths"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "events.2.path": "/synthetic/sweep-provider-unique-a",
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["provider-hosted-activity"]},
+            "expect.batch.actions": {"source": "clean"},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_unique_path_threshold_fires",
+          "covers": [
+            {
+              "kind": "provider-hosted-activity",
+              "args": ["provider_unique_paths"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "events.2.path": "/synthetic/sweep-provider-unique-c"
+          }
+        }
+      ]
+    },
+    {
+      "name": "provider_min_score_boundary",
+      "base": {
+        "args": {
+          "provider_ranges": ["tests/fixtures/provider_ranges/synthetichost.csv"],
+          "provider_watch": ["synthetichost"],
+          "provider_request_count": 3,
+          "provider_unique_paths": 3,
+          "provider_min_score": 5.0,
+          "emit_suspects": true
+        },
+        "actors": {
+          "source": {"ip": "doc:1:163", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-provider-score-a"},
+          {"actor": "source", "at": 1, "path": "/synthetic/sweep-provider-score-b"},
+          {"actor": "source", "at": 2, "path": "/synthetic/sweep-provider-score-c"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["provider-hosted-activity"]},
+            "actions": {"source": "suspect"}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {
+                "actor": "source",
+                "action": "suspect",
+                "reasons": ["provider-hosted-activity"]
+              }
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "at_score_threshold_fires",
+          "covers": [
+            {
+              "kind": "provider-hosted-activity",
+              "args": ["provider_min_score"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "args.provider_min_score": 5.0
+          }
+        },
+        {
+          "name": "above_score_threshold_stays_clean",
+          "covers": [
+            {
+              "kind": "provider-hosted-activity",
+              "args": ["provider_min_score"],
+              "boundary": "above"
+            }
+          ],
+          "set": {
+            "args.provider_min_score": 5.1,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["provider-hosted-activity"]},
+            "expect.batch.actions": {"source": "clean"},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        }
+      ]
+    }
+  ]
+}

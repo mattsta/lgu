@@ -1,0 +1,546 @@
+{
+  "sweeps": [
+    {
+      "name": "machine_path_count_boundary",
+      "base": {
+        "args": {
+          "emit_suspects": true,
+          "machine_path_count": 2,
+          "detector_config": {"machine_path_patterns": ["(?:^|/)robots\\.txt$"]}
+        },
+        "actors": {
+          "source": {"ip": "doc:2:40", "ua": "chrome_win_135", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "repeat": 2, "every": 600, "path": "/synthetic/robots.txt", "status": "404"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["machine-path"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "suspect", "reasons": ["machine-path"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_below_stays_clean",
+          "covers": [
+            {"kind": "machine-path", "args": ["machine_path_count"], "boundary": "below"}
+          ],
+          "set": {
+            "events.0.repeat": 1,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["machine-path"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_threshold_fires",
+          "covers": [
+            {"kind": "machine-path", "args": ["machine_path_count"], "boundary": "at"}
+          ],
+          "set": {"events.0.repeat": 2}
+        }
+      ]
+    },
+    {
+      "name": "lone_probe_count_boundary",
+      "base": {
+        "args": {"emit_suspects": true, "lone_probe_count": 2},
+        "actors": {
+          "source": {"ip": "doc:2:41", "ua": "chrome_win_135", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "repeat": 2, "every": 600, "path": "/synthetic/.env", "status": "404"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["exposure-probe"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "suspect", "reasons": ["exposure-probe"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_below_stays_clean",
+          "covers": [
+            {"kind": "exposure-probe", "args": ["lone_probe_count"], "boundary": "below"}
+          ],
+          "set": {
+            "events.0.repeat": 1,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["exposure-probe"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_threshold_fires",
+          "covers": [
+            {"kind": "exposure-probe", "args": ["lone_probe_count"], "boundary": "at"}
+          ],
+          "set": {"events.0.repeat": 2}
+        }
+      ]
+    },
+    {
+      "name": "protocol_mismatch_count_boundary",
+      "base": {
+        "args": {
+          "emit_suspects": true,
+          "protocol_mismatch_count": 2,
+          "protocol_min_modern_rows": 2
+        },
+        "actors": {
+          "person": {"ip": "doc:2:42", "ua": "chrome_win_135", "referer": "referrer", "protocol": "HTTP/2.0"},
+          "source": {"ip": "doc:2:43", "ua": "chrome_mac_135", "referer": "none", "protocol": "HTTP/1.1"}
+        },
+        "events": [
+          {"actor": "person", "at": 0, "path": "/synthetic/content"},
+          {"actor": "person", "at": 1, "path": "/synthetic/favicon.ico"},
+          {"actor": "source", "at": 600, "repeat": 2, "every": 600, "path": "/synthetic/content"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "clean": ["person"],
+            "proofs": {"source": ["protocol-mismatch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "suspect", "reasons": ["protocol-mismatch"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_below_stays_clean",
+          "covers": [
+            {"kind": "protocol-mismatch", "args": ["protocol_mismatch_count"], "boundary": "below"}
+          ],
+          "set": {
+            "events.2.repeat": 1,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["person", "source"],
+            "expect.batch.absent_proofs": {"source": ["protocol-mismatch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["person", "source"]
+          }
+        },
+        {
+          "name": "at_threshold_fires",
+          "covers": [
+            {"kind": "protocol-mismatch", "args": ["protocol_mismatch_count"], "boundary": "at"}
+          ],
+          "set": {"events.2.repeat": 2}
+        }
+      ]
+    },
+    {
+      "name": "protocol_min_modern_rows_boundary",
+      "base": {
+        "args": {"emit_suspects": true, "protocol_min_modern_rows": 2},
+        "actors": {
+          "person": {"ip": "doc:2:44", "ua": "chrome_win_135", "referer": "referrer", "protocol": "HTTP/2.0"},
+          "source": {"ip": "doc:2:45", "ua": "chrome_mac_135", "referer": "none", "protocol": "HTTP/1.1"}
+        },
+        "events": [
+          {"actor": "person", "at": 0, "path": "/synthetic/content"},
+          {"actor": "person", "at": 1, "path": "/synthetic/favicon.ico"},
+          {"actor": "source", "at": 2, "path": "/synthetic/content"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "clean": ["person"],
+            "proofs": {"source": ["protocol-mismatch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "suspect", "reasons": ["protocol-mismatch"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_below_stays_clean",
+          "covers": [
+            {"kind": "protocol-mismatch", "args": ["protocol_min_modern_rows"], "boundary": "below"}
+          ],
+          "set": {
+            "args.protocol_min_modern_rows": 3,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["person", "source"],
+            "expect.batch.absent_proofs": {"source": ["protocol-mismatch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["person", "source"]
+          }
+        },
+        {
+          "name": "at_threshold_fires",
+          "covers": [
+            {"kind": "protocol-mismatch", "args": ["protocol_min_modern_rows"], "boundary": "at"}
+          ],
+          "set": {"args.protocol_min_modern_rows": 2}
+        }
+      ]
+    },
+    {
+      "name": "uncompressed_ratio_boundary",
+      "base": {
+        "args": {
+          "emit_suspects": true,
+          "uncompressed_min_samples": 3,
+          "uncompressed_ratio": 1.5
+        },
+        "actors": {
+          "person": {"ip": "doc:2:46", "ua": "chrome_win_135", "referer": "referrer", "protocol": "HTTP/2.0"},
+          "source": {"ip": "doc:2:47", "ua": "chrome_mac_135", "referer": "none", "protocol": "HTTP/2.0"}
+        },
+        "events": [
+          {"actor": "person", "at": 0, "path": "/synthetic/content", "body_bytes": 1000},
+          {"actor": "person", "at": 1, "path": "/synthetic/favicon.ico"},
+          {"actor": "person", "at": 20, "path": "/synthetic/content", "body_bytes": 1000},
+          {"actor": "person", "at": 40, "path": "/synthetic/content", "body_bytes": 1000},
+          {"actor": "source", "at": 60, "path": "/synthetic/content", "body_bytes": 1500}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "clean": ["person"],
+            "proofs": {"source": ["uncompressed-fetch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "suspect", "reasons": ["uncompressed-fetch"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_below_stays_clean",
+          "covers": [
+            {"kind": "uncompressed-fetch", "args": ["uncompressed_ratio"], "boundary": "below"}
+          ],
+          "set": {
+            "events.4.body_bytes": 1499,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["person", "source"],
+            "expect.batch.absent_proofs": {"source": ["uncompressed-fetch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["person", "source"]
+          }
+        },
+        {
+          "name": "at_threshold_fires",
+          "covers": [
+            {"kind": "uncompressed-fetch", "args": ["uncompressed_ratio"], "boundary": "at"}
+          ],
+          "set": {"events.4.body_bytes": 1500}
+        }
+      ]
+    },
+    {
+      "name": "uncompressed_min_samples_boundary",
+      "base": {
+        "args": {"emit_suspects": true, "uncompressed_min_samples": 4},
+        "actors": {
+          "person": {"ip": "doc:2:48", "ua": "chrome_win_135", "referer": "referrer", "protocol": "HTTP/2.0"},
+          "source": {"ip": "doc:2:49", "ua": "chrome_mac_135", "referer": "none", "protocol": "HTTP/2.0"}
+        },
+        "events": [
+          {"actor": "person", "at": 0, "path": "/synthetic/content", "body_bytes": 1000},
+          {"actor": "person", "at": 1, "path": "/synthetic/favicon.ico"},
+          {"actor": "person", "at": 20, "path": "/synthetic/content", "body_bytes": 1000},
+          {"actor": "person", "at": 40, "path": "/synthetic/content", "body_bytes": 1000},
+          {"actor": "source", "at": 60, "path": "/synthetic/content", "body_bytes": 2000}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "clean": ["person"],
+            "proofs": {"source": ["uncompressed-fetch"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "suspect", "reasons": ["uncompressed-fetch"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_below_stays_clean",
+          "covers": [
+            {"kind": "uncompressed-fetch", "args": ["uncompressed_min_samples"], "boundary": "below"}
+          ],
+          "set": {
+            "args.uncompressed_min_samples": 5,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["person", "source"],
+            "expect.batch.absent_proofs": {"source": ["uncompressed-fetch"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["person", "source"]
+          }
+        },
+        {
+          "name": "at_threshold_fires",
+          "covers": [
+            {"kind": "uncompressed-fetch", "args": ["uncompressed_min_samples"], "boundary": "at"}
+          ],
+          "set": {"args.uncompressed_min_samples": 4}
+        }
+      ]
+    },
+    {
+      "name": "stale_chromium_gap_boundary",
+      "base": {
+        "args": {"emit_suspects": true, "stale_chromium_gap": 13, "stale_min_clients": 2},
+        "actors": {
+          "first": {"ip": "doc:2:70", "ua": "chrome_133", "referer": "referrer", "protocol": "HTTP/2.0"},
+          "second": {"ip": "doc:2:71", "ua": "chrome_133", "referer": "referrer", "protocol": "HTTP/2.0"},
+          "source": {"ip": "doc:2:72", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "first", "at": 0, "path": "/synthetic/favicon.ico"},
+          {"actor": "second", "at": 600, "path": "/synthetic/favicon.ico"},
+          {"actor": "source", "at": 1200, "path": "/synthetic/content"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "clean": ["first", "second"],
+            "proofs": {"source": ["stale-browser"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "suspect", "reasons": ["stale-browser"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_short_of_the_gap_stays_clean",
+          "covers": [
+            {"kind": "stale-browser", "args": ["stale_chromium_gap"], "boundary": "below"}
+          ],
+          "set": {
+            "args.stale_chromium_gap": 14,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["first", "second", "source"],
+            "expect.batch.absent_proofs": {"source": ["stale-browser"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["first", "second", "source"]
+          }
+        },
+        {
+          "name": "at_gap_fires",
+          "covers": [
+            {"kind": "stale-browser", "args": ["stale_chromium_gap"], "boundary": "at"}
+          ],
+          "set": {"args.stale_chromium_gap": 13}
+        }
+      ]
+    },
+    {
+      "name": "stale_firefox_gap_boundary",
+      "base": {
+        "args": {"emit_suspects": true, "stale_firefox_gap": 28, "stale_min_clients": 2},
+        "actors": {
+          "first": {"ip": "doc:2:73", "ua": "firefox_150", "referer": "referrer", "protocol": "HTTP/2.0"},
+          "second": {"ip": "doc:2:74", "ua": "firefox_150", "referer": "referrer", "protocol": "HTTP/2.0"},
+          "source": {"ip": "doc:2:75", "ua": "firefox_122", "referer": "none"}
+        },
+        "events": [
+          {"actor": "first", "at": 0, "path": "/synthetic/favicon.ico"},
+          {"actor": "second", "at": 600, "path": "/synthetic/favicon.ico"},
+          {"actor": "source", "at": 1200, "path": "/synthetic/content"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "clean": ["first", "second"],
+            "proofs": {"source": ["stale-browser"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "suspect", "reasons": ["stale-browser"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_short_of_the_gap_stays_clean",
+          "covers": [
+            {"kind": "stale-browser", "args": ["stale_firefox_gap"], "boundary": "below"}
+          ],
+          "set": {
+            "args.stale_firefox_gap": 29,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["first", "second", "source"],
+            "expect.batch.absent_proofs": {"source": ["stale-browser"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["first", "second", "source"]
+          }
+        },
+        {
+          "name": "at_gap_fires",
+          "covers": [
+            {"kind": "stale-browser", "args": ["stale_firefox_gap"], "boundary": "at"}
+          ],
+          "set": {"args.stale_firefox_gap": 28}
+        }
+      ]
+    },
+    {
+      "name": "stale_min_clients_boundary",
+      "base": {
+        "args": {"emit_suspects": true, "stale_chromium_gap": 13, "stale_min_clients": 2},
+        "actors": {
+          "first": {"ip": "doc:2:76", "ua": "chrome_133", "referer": "referrer", "protocol": "HTTP/2.0"},
+          "second": {"ip": "doc:2:77", "ua": "chrome_133", "referer": "referrer", "protocol": "HTTP/2.0"},
+          "source": {"ip": "doc:2:78", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {"actor": "first", "at": 0, "path": "/synthetic/favicon.ico"},
+          {"actor": "second", "at": 600, "path": "/synthetic/favicon.ico"},
+          {"actor": "source", "at": 1200, "path": "/synthetic/content"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "clean": ["first", "second"],
+            "proofs": {"source": ["stale-browser"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "suspect", "reasons": ["stale-browser"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_client_short_stays_clean",
+          "covers": [
+            {"kind": "stale-browser", "args": ["stale_min_clients"], "boundary": "below"}
+          ],
+          "set": {
+            "args.stale_min_clients": 3,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["first", "second", "source"],
+            "expect.batch.absent_proofs": {"source": ["stale-browser"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["first", "second", "source"]
+          }
+        },
+        {
+          "name": "at_min_clients_fires",
+          "covers": [
+            {"kind": "stale-browser", "args": ["stale_min_clients"], "boundary": "at"}
+          ],
+          "set": {"args.stale_min_clients": 2}
+        }
+      ]
+    },
+    {
+      "name": "redirect_hop_window_boundary",
+      "base": {
+        "args": {"emit_suspects": true, "redirect_hop_window_seconds": 3},
+        "actors": {
+          "entry": {"ip": "doc:2:50", "ua": "chrome_win_135", "referer": "none"},
+          "exit": {"ip": "doc:2:51", "ua": "chrome_win_135", "referer": "none"}
+        },
+        "events": [
+          {"actor": "entry", "at": 0, "path": "/synthetic/content", "status": "301"},
+          {"actor": "exit", "at": 3, "path": "/synthetic/content"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["entry", "exit"],
+            "proofs": {"entry": ["redirect-ip-hop"], "exit": ["redirect-ip-hop"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "exit", "action": "suspect", "reasons": ["redirect-ip-hop"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "at_window_fires",
+          "covers": [
+            {"kind": "redirect-ip-hop", "args": ["redirect_hop_window_seconds"], "boundary": "at"}
+          ],
+          "set": {"events.1.at": 3}
+        },
+        {
+          "name": "beyond_window_stays_clean",
+          "covers": [
+            {"kind": "redirect-ip-hop", "args": ["redirect_hop_window_seconds"], "boundary": "above"}
+          ],
+          "set": {
+            "events.1.at": 4,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["entry", "exit"],
+            "expect.batch.absent_proofs": {
+              "entry": ["redirect-ip-hop"],
+              "exit": ["redirect-ip-hop"]
+            },
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["entry", "exit"]
+          }
+        }
+      ]
+    }
+  ]
+}

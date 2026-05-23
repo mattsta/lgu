@@ -1,0 +1,250 @@
+{
+  "scenarios": [
+    {
+      "name": "payload_fuzzer_configured_marker_fires",
+      "args": {
+        "detector_config": {"payload_marker_patterns": ["synthetic_marker="]}
+      },
+      "actors": {
+        "source": {"ip": "doc:3:120", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {
+          "actor": "source",
+          "repeat": 12,
+          "every": 1,
+          "path": "/synthetic/payload-fuzzer?synthetic_marker=alpha&probe=union%20all%20select"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "proofs": {"source": ["payload-fuzzer"]},
+          "absent_proofs": {"source": ["serial-sweep", "same-second-ua-swap"]}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "ban", "reasons": ["payload-fuzzer"]}
+          ]
+        }
+      }
+    },
+    {
+      "name": "rapid_ua_switch_fires",
+      "actors": {
+        "source": {"ip": "doc:3:121", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {"actor": "source", "at": 0, "path": "/synthetic/rapid-ua-a", "ua": "chrome_120"},
+        {"actor": "source", "at": 0.5, "path": "/synthetic/rapid-ua-b", "ua": "firefox_122"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "proofs": {"source": ["rapid-ua-switch"]},
+          "absent_proofs": {"source": ["same-second-ua-swap"]}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "ban", "reasons": ["rapid-ua-switch"]}
+          ]
+        }
+      }
+    },
+    {
+      "name": "rotating_ua_family_diversity_suspects",
+      "args": {"emit_suspects": true},
+      "actors": {
+        "source": {"ip": "doc:3:122", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {"actor": "source", "at": 0, "path": "/synthetic/rotating-ua-a", "ua": "chrome_120"},
+        {"actor": "source", "at": 3, "path": "/synthetic/rotating-ua-b", "ua": "firefox_122"},
+        {"actor": "source", "at": 6, "path": "/synthetic/rotating-ua-c", "ua": "safari_17"},
+        {"actor": "source", "at": 9, "path": "/synthetic/rotating-ua-d", "ua": "SyntheticBrowserA/1.0"},
+        {"actor": "source", "at": 12, "path": "/synthetic/rotating-ua-e", "ua": "SyntheticBrowserB/1.0"},
+        {"actor": "source", "at": 15, "path": "/synthetic/rotating-ua-f", "ua": "SyntheticBrowserC/1.0"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "proofs": {"source": ["rotating-ua"]},
+          "actions": {"source": "suspect"},
+          "absent_proofs": {"source": ["rapid-ua-switch"]}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "suspect", "reasons": ["rotating-ua"]}
+          ],
+          "forbidden_actions": {"source": ["ban"]}
+        }
+      }
+    },
+    {
+      "name": "periodic_poller_fires_without_cadence",
+      "args": {"cadence_repeat_count": 99, "cadence_hour_repeat_count": 99},
+      "actors": {
+        "source": {"ip": "doc:3:123", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {
+          "actor": "source",
+          "repeat": 6,
+          "every": 3600,
+          "path": "/synthetic/periodic-poller-target"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "proofs": {"source": ["periodic-poller"]},
+          "absent_proofs": {"source": ["cadenced-repeat"]}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "ban", "reasons": ["periodic-poller"]}
+          ]
+        }
+      }
+    },
+    {
+      "name": "serial_sweep_fires",
+      "actors": {
+        "source": {"ip": "doc:3:124", "ua": "chrome_120", "referer": "referrer"}
+      },
+      "events": [
+        {
+          "actor": "source",
+          "repeat": 12,
+          "every": 1,
+          "path_template": "/synthetic/serial-positive-{i:02d}"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "proofs": {"source": ["serial-sweep"]}
+        },
+        "live": {
+          "emission_count": 1,
+          "allowed_extra_reasons": {"source": ["paced-sweep"]},
+          "emissions": [
+            {"actor": "source", "action": "ban", "reasons": ["serial-sweep"]}
+          ]
+        }
+      }
+    },
+    {
+      "name": "redundant_revisit_fires",
+      "actors": {
+        "source": {"ip": "doc:3:125", "ua": "chrome_120", "referer": "referrer"}
+      },
+      "events": [
+        {
+          "actor": "source",
+          "repeat": 3,
+          "every": 200,
+          "events": [
+            {"offset": 0, "path": "/synthetic/revisit-positive-a"},
+            {"offset": 40, "path": "/synthetic/revisit-positive-b"},
+            {"offset": 80, "path": "/synthetic/revisit-positive-c"},
+            {"offset": 120, "path": "/synthetic/revisit-positive-d"},
+            {"offset": 160, "path": "/synthetic/revisit-positive-e"}
+          ]
+        }
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "proofs": {"source": ["redundant-revisit"]}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "ban", "reasons": ["redundant-revisit"]}
+          ]
+        }
+      }
+    },
+    {
+      "name": "redundant_revisit_referer_split_stays_clean",
+      "actors": {
+        "source": {"ip": "doc:3:126", "ua": "chrome_120", "referer": "referrer"}
+      },
+      "events": [
+        {
+          "actor": "source",
+          "repeat": 2,
+          "every": 200,
+          "referer": "referrer",
+          "events": [
+            {"offset": 0, "path": "/synthetic/revisit-split-a"},
+            {"offset": 40, "path": "/synthetic/revisit-split-b"},
+            {"offset": 80, "path": "/synthetic/revisit-split-c"},
+            {"offset": 120, "path": "/synthetic/revisit-split-d"},
+            {"offset": 160, "path": "/synthetic/revisit-split-e"}
+          ]
+        },
+        {
+          "actor": "source",
+          "at": 400,
+          "referer": "alt_referrer",
+          "events": [
+            {"offset": 0, "path": "/synthetic/revisit-split-a"},
+            {"offset": 40, "path": "/synthetic/revisit-split-b"},
+            {"offset": 80, "path": "/synthetic/revisit-split-c"},
+            {"offset": 120, "path": "/synthetic/revisit-split-d"},
+            {"offset": 160, "path": "/synthetic/revisit-split-e"}
+          ]
+        }
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["source"],
+          "absent_proofs": {"source": ["redundant-revisit"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["source"]
+        }
+      }
+    },
+    {
+      "name": "same_second_ua_swap_same_ua_stays_clean",
+      "args": {
+        "detector_config": {"payload_marker_patterns": ["synthetic_marker="]}
+      },
+      "actors": {
+        "source": {"ip": "doc:3:127", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {
+          "actor": "source",
+          "at": 100.2,
+          "path": "/synthetic/same-ua-marker?synthetic_marker=alpha",
+          "ua": "chrome_120"
+        },
+        {
+          "actor": "source",
+          "at": 100.8,
+          "path": "/synthetic/same-ua-marker?synthetic_marker=beta",
+          "ua": "chrome_120"
+        }
+      ],
+      "expect": {
+        "batch": {
+          "clean": ["source"],
+          "absent_proofs": {"source": ["same-second-ua-swap", "rapid-ua-switch"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["source"]
+        }
+      }
+    }
+  ]
+}

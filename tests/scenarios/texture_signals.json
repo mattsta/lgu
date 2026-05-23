@@ -1,0 +1,371 @@
+{
+  "scenarios": [
+    {
+      "name": "machine_path_fires_without_banning",
+      "args": {
+        "emit_suspects": true,
+        "detector_config": {"machine_path_patterns": ["(?:^|/)robots\\.txt$"]}
+      },
+      "actors": {
+        "source": {"ip": "doc:2:20", "ua": "chrome_win_135", "referer": "referrer"}
+      },
+      "events": [
+        {"actor": "source", "at": 0, "path": "/synthetic/robots.txt", "status": "404"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "proofs": {"source": ["machine-path"]},
+          "actions": {"source": "suspect"},
+          "max_action": {"source": "suspect"}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "suspect", "reasons": ["machine-path"]}
+          ],
+          "forbidden_actions": {"source": ["ban"]}
+        }
+      }
+    },
+    {
+      "name": "machine_path_overruled_by_browser_evidence",
+      "args": {
+        "emit_suspects": true,
+        "detector_config": {"machine_path_patterns": ["(?:^|/)robots\\.txt$"]}
+      },
+      "actors": {
+        "source": {"ip": "doc:2:21", "ua": "chrome_win_135", "referer": "referrer"}
+      },
+      "events": [
+        {"actor": "source", "at": 0, "path": "/synthetic/favicon.ico", "protocol": "HTTP/2.0"},
+        {"actor": "source", "at": 5, "path": "/synthetic/robots.txt", "status": "404"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": [],
+          "clean": ["source"],
+          "absent_proofs": {"source": ["machine-path"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["source"]
+        }
+      }
+    },
+    {
+      "name": "exposure_probe_fires_on_failed_lone_probe",
+      "args": {"emit_suspects": true},
+      "actors": {
+        "source": {"ip": "doc:2:22", "ua": "chrome_win_135", "referer": "none"}
+      },
+      "events": [
+        {"actor": "source", "at": 0, "path": "/synthetic/.git/config", "status": "404"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "proofs": {"source": ["exposure-probe"]},
+          "actions": {"source": "suspect"},
+          "absent_proofs": {"source": ["asset-primed-probe"]}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "suspect", "reasons": ["exposure-probe"]}
+          ],
+          "forbidden_actions": {"source": ["ban"]}
+        }
+      }
+    },
+    {
+      "name": "exposure_probe_quiet_when_path_is_served",
+      "args": {"emit_suspects": true},
+      "actors": {
+        "source": {"ip": "doc:2:23", "ua": "chrome_win_135", "referer": "none"}
+      },
+      "events": [
+        {"actor": "source", "at": 0, "path": "/synthetic/.git/config", "status": "200"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": [],
+          "clean": ["source"],
+          "absent_proofs": {"source": ["exposure-probe"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["source"]
+        }
+      }
+    },
+    {
+      "name": "suspect_ua_fires_without_banning",
+      "args": {
+        "emit_suspects": true,
+        "detector_config": {"suspect_ua_patterns": ["Firefox/122"]}
+      },
+      "actors": {
+        "source": {"ip": "doc:2:24", "ua": "firefox_122", "referer": "none"}
+      },
+      "events": [
+        {"actor": "source", "at": 0, "path": "/synthetic/content"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "proofs": {"source": ["suspect-ua"]},
+          "actions": {"source": "suspect"}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "suspect", "reasons": ["suspect-ua"]}
+          ],
+          "forbidden_actions": {"source": ["ban"]}
+        }
+      }
+    },
+    {
+      "name": "suspect_ua_overruled_by_browser_evidence",
+      "args": {
+        "emit_suspects": true,
+        "detector_config": {"suspect_ua_patterns": ["Firefox/122"]}
+      },
+      "actors": {
+        "source": {"ip": "doc:2:25", "ua": "firefox_122", "referer": "referrer"}
+      },
+      "events": [
+        {"actor": "source", "at": 0, "path": "/synthetic/app.css", "protocol": "HTTP/2.0"},
+        {"actor": "source", "at": 1, "path": "/synthetic/content", "protocol": "HTTP/2.0"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": [],
+          "clean": ["source"],
+          "absent_proofs": {"source": ["suspect-ua"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["source"]
+        }
+      }
+    },
+    {
+      "name": "protocol_mismatch_fires_for_legacy_browser",
+      "args": {"emit_suspects": true, "protocol_min_modern_rows": 2},
+      "actors": {
+        "person": {"ip": "doc:2:26", "ua": "chrome_win_135", "referer": "referrer", "protocol": "HTTP/2.0"},
+        "source": {"ip": "doc:2:27", "ua": "chrome_win_135", "referer": "none", "protocol": "HTTP/1.1"}
+      },
+      "events": [
+        {"actor": "person", "at": 0, "path": "/synthetic/content"},
+        {"actor": "person", "at": 1, "path": "/synthetic/favicon.ico"},
+        {"actor": "source", "at": 2, "path": "/synthetic/content"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "clean": ["person"],
+          "proofs": {"source": ["protocol-mismatch"]},
+          "actions": {"source": "suspect"}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "suspect", "reasons": ["protocol-mismatch"]}
+          ],
+          "forbidden_actions": {"source": ["ban"]}
+        }
+      }
+    },
+    {
+      "name": "protocol_mismatch_quiet_on_plain_http_redirect",
+      "args": {"emit_suspects": true, "protocol_min_modern_rows": 2},
+      "actors": {
+        "person": {"ip": "doc:2:28", "ua": "chrome_win_135", "referer": "referrer", "protocol": "HTTP/2.0"},
+        "source": {"ip": "doc:2:29", "ua": "chrome_mac_135", "referer": "none", "protocol": "HTTP/1.1"}
+      },
+      "events": [
+        {"actor": "person", "at": 0, "path": "/synthetic/content"},
+        {"actor": "person", "at": 1, "path": "/synthetic/favicon.ico"},
+        {"actor": "source", "at": 2, "path": "/synthetic/content", "status": "301"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": [],
+          "clean": ["person", "source"],
+          "absent_proofs": {"source": ["protocol-mismatch"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["person", "source"]
+        }
+      }
+    },
+    {
+      "name": "uncompressed_fetch_fires_on_oversized_body",
+      "args": {"emit_suspects": true, "uncompressed_min_samples": 3},
+      "actors": {
+        "person": {"ip": "doc:2:30", "ua": "chrome_win_135", "referer": "referrer", "protocol": "HTTP/2.0"},
+        "source": {"ip": "doc:2:31", "ua": "chrome_mac_135", "referer": "none", "protocol": "HTTP/2.0"}
+      },
+      "events": [
+        {"actor": "person", "at": 0, "path": "/synthetic/content", "body_bytes": 1000},
+        {"actor": "person", "at": 1, "path": "/synthetic/favicon.ico"},
+        {"actor": "person", "at": 20, "path": "/synthetic/content", "body_bytes": 1000},
+        {"actor": "person", "at": 40, "path": "/synthetic/content", "body_bytes": 1000},
+        {"actor": "source", "at": 60, "path": "/synthetic/content", "body_bytes": 2000}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "clean": ["person"],
+          "proofs": {"source": ["uncompressed-fetch"]},
+          "actions": {"source": "suspect"}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "suspect", "reasons": ["uncompressed-fetch"]}
+          ],
+          "forbidden_actions": {"source": ["ban"]}
+        }
+      }
+    },
+    {
+      "name": "uncompressed_fetch_quiet_for_normal_body",
+      "args": {"emit_suspects": true, "uncompressed_min_samples": 3},
+      "actors": {
+        "person": {"ip": "doc:2:36", "ua": "chrome_win_135", "referer": "referrer", "protocol": "HTTP/2.0"},
+        "source": {"ip": "doc:2:37", "ua": "chrome_mac_135", "referer": "none", "protocol": "HTTP/2.0"}
+      },
+      "events": [
+        {"actor": "person", "at": 0, "path": "/synthetic/content", "body_bytes": 1000},
+        {"actor": "person", "at": 1, "path": "/synthetic/favicon.ico"},
+        {"actor": "person", "at": 20, "path": "/synthetic/content", "body_bytes": 1000},
+        {"actor": "person", "at": 40, "path": "/synthetic/content", "body_bytes": 1000},
+        {"actor": "source", "at": 60, "path": "/synthetic/content", "body_bytes": 1020}
+      ],
+      "expect": {
+        "batch": {
+          "bots": [],
+          "clean": ["person", "source"],
+          "absent_proofs": {"source": ["uncompressed-fetch"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["person", "source"]
+        }
+      }
+    },
+    {
+      "name": "redirect_ip_hop_fires_across_proxy_pool",
+      "args": {"emit_suspects": true},
+      "actors": {
+        "entry": {"ip": "doc:2:32", "ua": "chrome_win_135", "referer": "none"},
+        "exit": {"ip": "doc:2:33", "ua": "chrome_win_135", "referer": "none"}
+      },
+      "events": [
+        {"actor": "entry", "at": 0, "path": "/synthetic/content", "status": "301"},
+        {"actor": "exit", "at": 1, "path": "/synthetic/content"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["entry", "exit"],
+          "proofs": {"entry": ["redirect-ip-hop"], "exit": ["redirect-ip-hop"]},
+          "actions": {"entry": "suspect", "exit": "suspect"}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "exit", "action": "suspect", "reasons": ["redirect-ip-hop"]}
+          ],
+          "forbidden_actions": {"exit": ["ban"]}
+        }
+      }
+    },
+    {
+      "name": "stale_browser_fires_against_versions_seen_rendering",
+      "args": {"emit_suspects": true, "stale_chromium_gap": 13, "stale_min_clients": 2},
+      "actors": {
+        "first": {"ip": "doc:2:60", "ua": "chrome_133", "referer": "referrer", "protocol": "HTTP/2.0"},
+        "second": {"ip": "doc:2:61", "ua": "chrome_133", "referer": "referrer", "protocol": "HTTP/2.0"},
+        "source": {"ip": "doc:2:62", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {"actor": "first", "at": 0, "path": "/synthetic/favicon.ico"},
+        {"actor": "second", "at": 600, "path": "/synthetic/favicon.ico"},
+        {"actor": "source", "at": 1200, "path": "/synthetic/content"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": ["source"],
+          "clean": ["first", "second"],
+          "proofs": {"source": ["stale-browser"]},
+          "actions": {"source": "suspect"}
+        },
+        "live": {
+          "emission_count": 1,
+          "emissions": [
+            {"actor": "source", "action": "suspect", "reasons": ["stale-browser"]}
+          ],
+          "forbidden_actions": {"source": ["ban"]}
+        }
+      }
+    },
+    {
+      "name": "stale_browser_quiet_without_rendering_reference",
+      "args": {"emit_suspects": true, "stale_chromium_gap": 13, "stale_min_clients": 2},
+      "actors": {
+        "first": {"ip": "doc:2:63", "ua": "chrome_133", "referer": "none"},
+        "second": {"ip": "doc:2:64", "ua": "chrome_133", "referer": "none"},
+        "source": {"ip": "doc:2:65", "ua": "chrome_120", "referer": "none"}
+      },
+      "events": [
+        {"actor": "first", "at": 0, "path": "/synthetic/content"},
+        {"actor": "second", "at": 600, "path": "/synthetic/content"},
+        {"actor": "source", "at": 1200, "path": "/synthetic/content"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": [],
+          "clean": ["first", "second", "source"],
+          "absent_proofs": {"source": ["stale-browser"]}
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["first", "second", "source"]
+        }
+      }
+    },
+    {
+      "name": "redirect_ip_hop_quiet_when_each_client_lands_itself",
+      "args": {"emit_suspects": true},
+      "actors": {
+        "first": {"ip": "doc:2:34", "ua": "chrome_win_135", "referer": "none"},
+        "second": {"ip": "doc:2:35", "ua": "chrome_win_135", "referer": "none"}
+      },
+      "events": [
+        {"actor": "first", "at": 0, "path": "/synthetic/content", "status": "301"},
+        {"actor": "second", "at": 0, "path": "/synthetic/content", "status": "301"},
+        {"actor": "first", "at": 1, "path": "/synthetic/content"},
+        {"actor": "second", "at": 1, "path": "/synthetic/content"}
+      ],
+      "expect": {
+        "batch": {
+          "bots": [],
+          "clean": ["first", "second"],
+          "absent_proofs": {
+            "first": ["redirect-ip-hop"],
+            "second": ["redirect-ip-hop"]
+          }
+        },
+        "live": {
+          "emission_count": 0,
+          "no_emissions": ["first", "second"]
+        }
+      }
+    }
+  ]
+}
