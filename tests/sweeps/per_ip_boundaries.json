@@ -1,0 +1,131 @@
+{
+  "sweeps": [
+    {
+      "name": "repeated_pair_count_boundary",
+      "base": {
+        "actors": {
+          "source": {"ip": "doc:1:130", "ua": "chrome_120", "referer": "none"}
+        },
+        "events": [
+          {
+            "actor": "source",
+            "repeat": 8,
+            "every": 40,
+            "events": [
+              {"offset": 0, "path": "/synthetic/sweep-pair-alpha"},
+              {"offset": 1, "path": "/synthetic/sweep-pair-beta"}
+            ]
+          }
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["repeated-pair"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["repeated-pair"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "one_below_stays_clean",
+          "covers": [
+            {
+              "kind": "repeated-pair",
+              "args": ["pair_repeat_count"],
+              "boundary": "below"
+            }
+          ],
+          "set": {
+            "events.0.repeat": 7,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["repeated-pair"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        },
+        {
+          "name": "at_threshold_fires",
+          "covers": [
+            {
+              "kind": "repeated-pair",
+              "args": ["pair_repeat_count"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "events.0.repeat": 8
+          }
+        }
+      ]
+    },
+    {
+      "name": "cadenced_repeat_gap_tolerance_boundary",
+      "base": {
+        "args": {"cadence_hour_repeat_count": 99},
+        "actors": {
+          "source": {"ip": "doc:1:131", "ua": "chrome_133", "referer": "none"}
+        },
+        "events": [
+          {"actor": "source", "at": 0, "path": "/synthetic/sweep-cadence-target"},
+          {"actor": "source", "at": 3600, "path": "/synthetic/sweep-cadence-target"},
+          {"actor": "source", "at": 7205, "path": "/synthetic/sweep-cadence-target"}
+        ],
+        "expect": {
+          "batch": {
+            "bots": ["source"],
+            "proofs": {"source": ["cadenced-repeat"]}
+          },
+          "live": {
+            "emission_count": 1,
+            "emissions": [
+              {"actor": "source", "action": "ban", "reasons": ["cadenced-repeat"]}
+            ]
+          }
+        }
+      },
+      "variants": [
+        {
+          "name": "at_tolerance_fires",
+          "covers": [
+            {
+              "kind": "cadenced-repeat",
+              "args": ["cadence_gap_tolerance_seconds"],
+              "boundary": "at"
+            }
+          ],
+          "set": {
+            "events.2.at": 7205
+          }
+        },
+        {
+          "name": "above_tolerance_stays_clean",
+          "covers": [
+            {
+              "kind": "cadenced-repeat",
+              "args": ["cadence_gap_tolerance_seconds"],
+              "boundary": "above"
+            }
+          ],
+          "set": {
+            "events.2.at": 7206,
+            "expect.batch.bots": [],
+            "expect.batch.proofs": {},
+            "expect.batch.clean": ["source"],
+            "expect.batch.absent_proofs": {"source": ["cadenced-repeat"]},
+            "expect.live.emission_count": 0,
+            "expect.live.emissions": [],
+            "expect.live.no_emissions": ["source"]
+          }
+        }
+      ]
+    }
+  ]
+}
